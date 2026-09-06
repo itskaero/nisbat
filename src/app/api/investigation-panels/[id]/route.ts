@@ -1,0 +1,4 @@
+import { prisma } from "@/lib/prisma";
+import { updateHandler } from "@/lib/api/crud";
+
+export const PATCH = updateHandler(prisma.investigationPanel, { authRoles: ["sr_faculty", "admin"] });

@@ -1,0 +1,25 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: nisbat-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: nisbat
+      POSTGRES_PASSWORD: nisbat_dev_password
+      POSTGRES_DB: nisbat
+    ports:
+      # host 5433 -> container 5432, since 5432 is already taken by another
+      # project's Postgres on this machine. Bound to localhost only — the
+      # database itself is never exposed to the LAN, unlike the Next.js app
+      # (see README "Access from a phone").
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - nisbat_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nisbat"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  nisbat_pgdata:

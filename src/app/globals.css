@@ -1,0 +1,283 @@
+@import "tailwindcss";
+@plugin "tailwindcss-animate";
+
+/* ============================================================
+   NISBAT — Design System
+   Dark editorial clinical shell. Tokens sourced from the
+   supplied brand/style reference (design-artifact.png) and
+   DESIGN.md. Dark is the product identity, not a togglable
+   theme — see DESIGN.md "Dark editorial shell + luminous
+   clinical accent".
+   ============================================================ */
+
+:root {
+  /* Surfaces */
+  --background: #0f1117; /* deep charcoal/navy app background */
+  --surface: #171a22; /* nav, workspace panels, cards */
+  --surface-raised: #1c2029; /* popovers, dialogs, dropdowns */
+  --surface-hover: #1f2430;
+  --muted: #2a2f3a; /* dividers, disabled fills, subtle chips */
+
+  /* Borders */
+  --border: #262b36;
+  --border-strong: #333a48;
+
+  /* Text */
+  --foreground: #f2f4f7;
+  --foreground-muted: #9aa2b1;
+  --foreground-subtle: #6b7280;
+
+  /* Brand — matched to logo.png (sampled directly: the wordmark/ribbon/
+     capsule sit in a tight dark-teal-to-forest-green cluster, roughly
+     rgb(0,56,64) to rgb(0,120,56)). Primary anchors on the capsule icon's
+     brighter emerald-teal; secondary anchors on the "Nisbat" wordmark's
+     darker teal. Orange/purple retired — they never appeared in the logo. */
+  --primary: #059669; /* emerald-600 — logo capsule ≈ rgb(2,152,114) */
+  --primary-light: #10b981; /* emerald-500 — gradient/hover step, same hue */
+  --primary-foreground: #ffffff;
+  --accent: #ffb020; /* kept — close to the logo's gold sparkle accent already */
+  --secondary: #115e59; /* teal-800 — "Nisbat" wordmark ≈ rgb(1,62,69), for fills/borders/gradients */
+  --secondary-light: #06b6d4; /* cyan-500 — teal-800 is too dark for legible text on this
+    dark shell (~2.3:1 against --surface); this is the readable step, same relationship
+    as --primary/--primary-light */
+  --info: #3b82f6;
+
+  /* Semantic */
+  --success: #22c55e;
+  --warning: #ffb020;
+  --danger: #ef4444;
+
+  --radius-sm: 0.5rem; /* 8px  — inputs, small controls */
+  --radius-md: 0.75rem; /* 12px — buttons, cards */
+  --radius-lg: 1rem; /* 16px — panels, dialogs */
+  --radius-full: 999px; /* chips, badges, avatars — pill-shaped, not sharp-cornered rectangles */
+
+  --font-urdu: "Noto Nastaliq Urdu", "Noto Sans Arabic", serif;
+
+  /* Glow — a real depth shadow (dark, offset, blurred) layered under a color
+     bloom, not a bare zero-offset halo standing in for elevation. Used
+     sparingly: primary actions, active/selected states, brand marks. Never
+     on ordinary surfaces (DESIGN.md: gradients/glow are accents, not fills). */
+  --glow-primary: 0 3px 10px -2px rgba(0, 0, 0, 0.5), 0 0 22px -6px rgba(16, 185, 129, 0.55);
+  --glow-primary-sm: 0 2px 6px -2px rgba(0, 0, 0, 0.45), 0 0 12px -4px rgba(16, 185, 129, 0.45);
+  --glow-secondary-sm: 0 2px 6px -2px rgba(0, 0, 0, 0.45), 0 0 12px -4px rgba(20, 184, 166, 0.4);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-hover: var(--surface-hover);
+  --color-muted: var(--muted);
+
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+
+  --color-foreground: var(--foreground);
+  --color-foreground-muted: var(--foreground-muted);
+  --color-foreground-subtle: var(--foreground-subtle);
+
+  --color-primary: var(--primary);
+  --color-primary-light: var(--primary-light);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-accent: var(--accent);
+  --color-secondary: var(--secondary);
+  --color-secondary-light: var(--secondary-light);
+  --color-info: var(--info);
+
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+
+  --font-sans: var(--font-inter), "IBM Plex Sans", "Source Sans 3", "Noto Sans",
+    ui-sans-serif, system-ui, sans-serif;
+  --font-urdu: var(--font-nastaliq), "Noto Nastaliq Urdu", "Noto Sans Arabic", serif;
+
+  /* Literal, not var(--radius-lg) etc. — this block and the plain :root
+     block above use the SAME custom-property names (unlike --color-* /
+     --background, which are deliberately different names). A self-
+     reference here makes the property cyclic → CSS spec says its computed
+     value goes guaranteed-invalid → every rounded-[var(--radius-lg)] (and every
+     bare rounded-lg/md/sm, since those are Tailwind's own theme keys under
+     these same names) silently falls back to border-radius: 0. This is
+     what produced the sharp-cornered UI despite both declarations looking
+     correct read in isolation. No light/dark radius override exists to
+     preserve indirection for — this app is fixed-dark (see file header). */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-full: 999px;
+}
+
+* {
+  border-color: var(--border);
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Atmospheric depth: a restrained radial glow behind the app shell, never a
+   decorative fill on individual components. */
+.app-atmosphere {
+  background:
+    radial-gradient(1200px 620px at 12% -8%, rgba(16, 185, 129, 0.14), transparent 60%),
+    radial-gradient(900px 500px at 100% 0%, rgba(17, 94, 89, 0.12), transparent 55%),
+    var(--background);
+}
+
+/* ============================================================
+   Login — gradient-wave background. The one surface with no
+   clinical data and the lowest continuous-attention cost, so it's
+   the one place DESIGN.md's restraint principle allows a more
+   expressive treatment (see plan: React Bits/Watermelon UI inform
+   this pattern, not imported wholesale — three blurred brand-color
+   blobs drifting slowly, not a literal gradient-waves component).
+   Everywhere else in the app stays exactly as calm as the dark
+   editorial shell already is; this never leaves the login route.
+   ============================================================ */
+.login-waves {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+.login-waves::before,
+.login-waves::after,
+.login-waves span {
+  content: "";
+  position: absolute;
+  border-radius: var(--radius-full);
+  filter: blur(90px);
+  will-change: transform;
+}
+.login-waves::before {
+  top: -18%;
+  left: -12%;
+  width: 55vw;
+  height: 55vw;
+  background: radial-gradient(closest-side, rgba(16, 185, 129, 0.35), transparent 70%);
+  animation: login-wave-drift-a 26s ease-in-out infinite alternate;
+}
+.login-waves::after {
+  bottom: -22%;
+  right: -14%;
+  width: 60vw;
+  height: 60vw;
+  background: radial-gradient(closest-side, rgba(20, 184, 166, 0.28), transparent 70%);
+  animation: login-wave-drift-b 32s ease-in-out infinite alternate;
+}
+.login-waves span {
+  top: 30%;
+  left: 55%;
+  width: 40vw;
+  height: 40vw;
+  background: radial-gradient(closest-side, rgba(255, 176, 32, 0.2), transparent 70%);
+  animation: login-wave-drift-c 22s ease-in-out infinite alternate;
+}
+@keyframes login-wave-drift-a {
+  to {
+    transform: translate(6vw, 8vh) scale(1.08);
+  }
+}
+@keyframes login-wave-drift-b {
+  to {
+    transform: translate(-7vw, -6vh) scale(1.1);
+  }
+}
+@keyframes login-wave-drift-c {
+  to {
+    transform: translate(-4vw, 6vh) scale(0.95);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .login-waves::before,
+  .login-waves::after,
+  .login-waves span {
+    animation: none;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--foreground-subtle);
+}
+
+.font-urdu {
+  font-family: var(--font-urdu);
+  direction: rtl;
+}
+
+/* Browser surfaces we didn't draw still carry the design. */
+::selection {
+  background: rgba(16, 185, 129, 0.32);
+  color: var(--foreground);
+}
+
+input,
+textarea {
+  caret-color: var(--primary);
+}
+
+/* clinical numerals — MR numbers, weights, doses, ages — stay tabular so
+   columns of them align instead of jittering with proportional digit widths */
+.tabular-nums,
+table {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Glow utilities — see --glow-* tokens above for why these carry a real
+   offset+blur shadow underneath the color bloom rather than a bare halo. */
+.glow-primary {
+  box-shadow: var(--glow-primary);
+}
+.glow-primary-sm {
+  box-shadow: var(--glow-primary-sm);
+}
+.glow-secondary-sm {
+  box-shadow: var(--glow-secondary-sm);
+}
+
+/* ============================================================
+   Print — a physically distinct paper surface. Always light,
+   regardless of app theme. No shadows in print; borders and
+   whitespace only. See DESIGN.md "Print design".
+   ============================================================ */
+@media print {
+  html,
+  body {
+    background: #ffffff !important;
+    color: #111318 !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-page {
+    box-shadow: none !important;
+    width: auto !important;
+    min-height: 0 !important;
+  }
+  @page {
+    margin: 12mm;
+  }
+}
