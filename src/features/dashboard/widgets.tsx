@@ -24,6 +24,7 @@ import { useFetch, useNow } from "@/lib/hooks";
 import { usePersisted } from "@/lib/storage/persisted-store";
 import { settingsStore } from "@/lib/storage/stores";
 import { PRAYER_METHODS } from "./prayer-methods";
+import { AqiChip } from "@/features/mausam/aqi-chip";
 
 interface Weather {
   temperature: number;
@@ -112,6 +113,7 @@ export function WeatherCard({ className, detailed = false }: { className?: strin
               </p>
             </>
           )}
+          <AqiChip className="mt-2" />
           <p className="mt-1 text-[10px] text-ink-3">Open-Meteo · observed {data.observedAt.slice(11, 16)} local</p>
         </>
       ) : null}

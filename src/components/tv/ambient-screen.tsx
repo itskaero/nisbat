@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { AqiChip } from "@/features/mausam/aqi-chip";
 import { describeWeather, dailyVerseRef } from "@/features/dashboard/widgets";
 import { formatHHMM, formatLongDate, nowHHMM, todayKey, zonedParts } from "@/lib/dates";
 import { useFetch, useNow } from "@/lib/hooks";
@@ -143,6 +144,7 @@ function AmbientContent({ onClose }: { onClose: () => void }) {
                 </div>
               </div>
             )}
+            <AqiChip className="!text-[clamp(0.85rem,1.3vw,1.1rem)]" />
             {nextPrayer && (
               <p className="text-[clamp(1rem,1.8vw,1.5rem)] text-ink-2">
                 <span className="text-emerald">{nextPrayer.name}</span> {formatHHMM(nextPrayer.at)} · {nextPrayer.inText}

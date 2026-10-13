@@ -21,6 +21,7 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const lat = Number(searchParams.get("lat"));
   const lon = Number(searchParams.get("lon"));
+  const hours = Math.min(24, Math.max(1, Number(searchParams.get("hours")) || 8));
   if (!Number.isFinite(lat) || !Number.isFinite(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180)
     return jsonError("Valid lat/lon required", 400);
   const url =
@@ -45,7 +46,7 @@ export async function GET(req: Request) {
       // Next 8 hours starting from the current local hour.
       hourly: (() => {
         const start = Math.max(0, d.hourly.time.findIndex((t) => t >= d.current.time.slice(0, 13)));
-        return d.hourly.time.slice(start, start + 8).map((t, i) => ({
+        return d.hourly.time.slice(start, start + hours).map((t, i) => ({
           time: t,
           temperature: d.hourly.temperature_2m[start + i],
           code: d.hourly.weather_code[start + i],
