@@ -1,7 +1,73 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { zonedParts } from "@/lib/dates";
+import { useNow } from "@/lib/hooks";
 import { settingsStore } from "@/lib/storage/stores";
 import { usePersisted } from "@/lib/storage/persisted-store";
+import { useTvMode } from "@/lib/tv/tv-mode";
+
+export type BackdropSlot = "dawn" | "day" | "dusk" | "night";
+
+/** Which photo fits the local hour: dawn 4–7, day 7–17, dusk 17–19:30, night otherwise. */
+export function backdropSlot(date: Date, tz: string): BackdropSlot {
+  const { hour, minute } = zonedParts(date, tz);
+  const t = hour + minute / 60;
+  if (t >= 4 && t < 7) return "dawn";
+  if (t >= 7 && t < 17) return "day";
+  if (t >= 17 && t < 19.5) return "dusk";
+  return "night";
+}
+
+/**
+ * Openly licensed photographs of Pakistani landmarks (credits in Settings),
+ * switched by time of day so the glass panels have something to show through.
+ * TV mode uses a pre-blurred copy: the frosted look without live blur cost.
+ */
+function PhotoBackdrop() {
+  const { timezone } = usePersisted(settingsStore);
+  const tv = useTvMode();
+  const now = useNow();
+  const slot = now ? backdropSlot(now, timezone) : null;
+  const [shown, setShown] = useState<{ slot: BackdropSlot; prev?: BackdropSlot } | null>(null);
+
+  useEffect(() => {
+    if (slot && slot !== shown?.slot) setShown({ slot, prev: shown?.slot });
+  }, [slot, shown?.slot]);
+
+  const src = (s: BackdropSlot) => (tv ? `/backgrounds/${s}-blur.webp` : `/backgrounds/${s}.webp`);
+  const srcSet = (s: BackdropSlot) => (tv ? undefined : `/backgrounds/${s}-sm.webp 960w, /backgrounds/${s}.webp 1920w`);
+
+  return (
+    <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 overflow-hidden bg-[#0b1220]">
+      {shown?.prev && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={src(shown.prev)} srcSet={srcSet(shown.prev)} sizes="100vw" alt="" className="absolute inset-0 h-full w-full object-cover" />
+      )}
+      {shown && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          key={shown.slot}
+          src={src(shown.slot)}
+          srcSet={srcSet(shown.slot)}
+          sizes="100vw"
+          alt=""
+          className="backdrop-fade absolute inset-0 h-full w-full object-cover"
+          onAnimationEnd={() => setShown((s) => (s ? { slot: s.slot } : s))}
+        />
+      )}
+      {/* Scrim: darker at the top (header) and bottom (lists), lighter in the middle. */}
+      <div
+        className={
+          shown?.slot === "day" || shown?.slot === "dawn"
+            ? // Bright daytime photos need a heavier scrim for white text.
+              "absolute inset-0 bg-[linear-gradient(180deg,rgba(7,12,22,0.78)_0%,rgba(7,12,22,0.55)_38%,rgba(7,12,22,0.66)_70%,rgba(7,12,22,0.9)_100%)]"
+            : "absolute inset-0 bg-[linear-gradient(180deg,rgba(7,12,22,0.62)_0%,rgba(7,12,22,0.32)_38%,rgba(7,12,22,0.5)_70%,rgba(7,12,22,0.86)_100%)]"
+        }
+      />
+    </div>
+  );
+}
 
 /**
  * Original atmospheric backdrop: dusky sky gradient with a stylised mosque and
@@ -9,6 +75,8 @@ import { usePersisted } from "@/lib/storage/persisted-store";
  */
 export function Atmosphere() {
   const { background } = usePersisted(settingsStore);
+
+  if (background === "photo") return <PhotoBackdrop />;
 
   if (background === "plain") {
     return <div aria-hidden className="fixed inset-0 -z-10 bg-[radial-gradient(120%_80%_at_20%_0%,#14223a_0%,#0b1220_55%,#070c16_100%)]" />;

@@ -226,7 +226,7 @@ export function QuranPage() {
         <SurahNavigator current={surahNumber} onSelect={(n) => navigate(n)} />
 
         <div className="min-w-0">
-          <Panel className="overflow-hidden">
+          <Panel className="glass-reading overflow-hidden">
             <div className="relative border-b border-white/8 bg-[radial-gradient(120%_120%_at_50%_0%,rgba(233,182,107,0.14),transparent_60%)] px-5 pb-5 pt-6 text-center">
               <p lang="ar" dir="rtl" className="font-quran text-4xl text-ink md:text-5xl">
                 {meta.name}

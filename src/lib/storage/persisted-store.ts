@@ -13,9 +13,9 @@ import type { ZodType } from "zod";
  * - Never touches `window` during server rendering.
  * - Syncs across tabs via the `storage` event.
  *
- * Data stored this way lives only in this browser on this device. It is the
- * MVP persistence layer; swap `read`/`write` for an API client to move to a
- * real database later without changing feature code.
+ * localStorage is the device's copy. Stores created with `sync: true` are also
+ * shared with the family through the Nisbat server (lib/storage/sync.ts);
+ * the local copy keeps working offline and catches up when reconnected.
  */
 export interface PersistedStore<T> {
   key: string;
@@ -28,6 +28,12 @@ export interface PersistedStore<T> {
   exportData(): unknown;
   /** Replace contents from an exported payload. Returns false if invalid. */
   importData(data: unknown): boolean;
+  /** Shared with the family through the Nisbat server (see lib/storage/sync.ts). */
+  sync: boolean;
+  /** Apply a value that came from the server; does not trigger a sync upload. */
+  applyRemote(data: unknown): boolean;
+  /** Called after every change made on this device (not for applyRemote). */
+  onLocalChange(listener: () => void): () => void;
 }
 
 interface Options<T> {
@@ -38,6 +44,8 @@ interface Options<T> {
   migrate?: (data: unknown, fromVersion: number) => unknown;
   /** Applied to every read before validation, e.g. to fill newly added fields. */
   normalize?: (data: unknown) => unknown;
+  /** Share this store across devices via the Nisbat server. */
+  sync?: boolean;
 }
 
 const PREFIX = "nisbat:";
@@ -50,6 +58,7 @@ export function allStores(): PersistedStore<unknown>[] {
 export function createPersistedStore<T>(opts: Options<T>): PersistedStore<T> {
   const storageKey = PREFIX + opts.key;
   const listeners = new Set<() => void>();
+  const localListeners = new Set<() => void>();
   let cache: T | undefined;
 
   const canUseStorage = () => {
@@ -104,6 +113,7 @@ export function createPersistedStore<T>(opts: Options<T>): PersistedStore<T> {
   };
 
   const emit = () => listeners.forEach((l) => l());
+  const emitLocal = () => localListeners.forEach((l) => l());
 
   const store: PersistedStore<T> = {
     key: opts.key,
@@ -119,6 +129,7 @@ export function createPersistedStore<T>(opts: Options<T>): PersistedStore<T> {
       cache = value;
       write(value);
       emit();
+      emitLocal();
     },
     reset() {
       cache = opts.defaults;
@@ -128,6 +139,7 @@ export function createPersistedStore<T>(opts: Options<T>): PersistedStore<T> {
         /* ignore */
       }
       emit();
+      emitLocal();
     },
     subscribe(listener) {
       listeners.add(listener);
@@ -151,6 +163,19 @@ export function createPersistedStore<T>(opts: Options<T>): PersistedStore<T> {
       if (!result.success) return false;
       store.set(result.data);
       return true;
+    },
+    sync: !!opts.sync,
+    applyRemote(data) {
+      const result = opts.schema.safeParse(opts.normalize ? opts.normalize(data) : data);
+      if (!result.success) return false;
+      cache = result.data;
+      write(result.data);
+      emit();
+      return true;
+    },
+    onLocalChange(listener) {
+      localListeners.add(listener);
+      return () => localListeners.delete(listener);
     },
   };
 

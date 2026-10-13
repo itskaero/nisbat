@@ -433,7 +433,7 @@ function ShoppingList() {
           toast("Shopping list cleared", { tone: "info" });
         }}
         title="Clear the whole list?"
-        description={`This removes all ${items.length} items from your Saman list on this device. This can't be undone.`}
+        description={`This removes all ${items.length} items from the family Saman list on every synced screen. This can't be undone.`}
         confirmLabel="Clear list"
       />
     </Panel>

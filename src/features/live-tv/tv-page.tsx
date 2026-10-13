@@ -334,7 +334,7 @@ function AddStreamDialog({ open, onClose, onAdded }: { open: boolean; onClose: (
       open={open}
       onClose={onClose}
       title="Add your own stream"
-      description="For streams you're entitled to watch, e.g. a broadcaster's published HLS link. Saved only on this device."
+      description="For streams you're entitled to watch, e.g. a broadcaster's published HLS link. Shared with your family's Nisbat screens."
       footer={
         <>
           <Button variant="ghost" onClick={onClose}>

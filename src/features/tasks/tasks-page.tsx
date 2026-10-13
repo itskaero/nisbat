@@ -54,7 +54,7 @@ export function TasksPage() {
           <h1 className="flex items-center gap-3 text-2xl font-semibold tracking-tight md:text-3xl">
             <SquareCheckBig className="size-7 text-emerald" aria-hidden /> {t("nav.tasks")}
           </h1>
-          <p className="mt-1 text-sm text-ink-2">Personal and family to-dos, saved on this device.</p>
+          <p className="mt-1 text-sm text-ink-2">Personal and family to-dos, shared across your Nisbat screens.</p>
         </div>
         <Button variant="primary" onClick={() => openTask()}>
           <Plus className="size-4" /> {t("action.addTask")}
@@ -172,7 +172,7 @@ export function TasksPage() {
               saved as notes — Nisbat doesn&apos;t send notifications yet.
             </p>
             <p className="mt-2 flex items-center gap-1.5 text-ink-3">
-              <ListTodo className="size-3.5" /> Tasks are stored only in this browser.
+              <ListTodo className="size-3.5" /> Tasks sync through your Nisbat server and still work offline.
             </p>
           </Panel>
         </aside>
@@ -185,7 +185,7 @@ export function TasksPage() {
           toast(`Deleted ${n} completed task${n === 1 ? "" : "s"}`, { tone: "info" });
         }}
         title="Delete completed tasks?"
-        description={`This permanently removes ${counts.completed} completed task${counts.completed === 1 ? "" : "s"} from this device.`}
+        description={`This permanently removes ${counts.completed} completed task${counts.completed === 1 ? "" : "s"} from every synced screen.`}
       />
     </div>
   );

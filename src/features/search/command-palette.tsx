@@ -299,7 +299,7 @@ function Palette({ onClose, initialQuery = "" }: { onClose: () => void; initialQ
               <div className="px-4 py-10 text-center">
                 <p className="text-sm text-ink">{verseLoading ? "Searching…" : `No results for “${q}”`}</p>
                 <p className="mt-1 text-xs text-ink-3">
-                  Search covers surah names, Quran translation text, your tasks, groceries and saved news on this device.
+                  Search covers surah names, Quran translation text, your tasks, groceries and saved news.
                 </p>
               </div>
             ) : (

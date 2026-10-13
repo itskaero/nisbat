@@ -3,7 +3,9 @@
 import { z } from "zod";
 import { createPersistedStore, uid } from "./persisted-store";
 import type { ActivityEvent, ActivityType } from "@/types/domain";
-import { GROCERY_UNITS } from "@/types/groceries";
+import { activitySchema, groceriesSchema, newsSchema, quranSchema, tasksSchema, tvSchema, type QuranState } from "./schemas";
+
+export type { QuranState };
 
 /* ------------------------------------------------------------------ */
 /* Settings                                                            */
@@ -24,7 +26,7 @@ export const settingsSchema = z.object({
   timezone: z.string(),
   textSize: z.enum(["md", "lg", "xl"]),
   motion: z.enum(["system", "reduced", "full"]),
-  background: z.enum(["dusk", "night", "plain"]),
+  background: z.enum(["photo", "dusk", "night", "plain"]),
   location: locationSchema.nullable(),
   showWeather: z.boolean(),
   showPrayer: z.boolean(),
@@ -59,7 +61,7 @@ const SETTINGS_DEFAULTS: Settings = {
   timezone: "Asia/Karachi",
   textSize: "md",
   motion: "system",
-  background: "dusk",
+  background: "photo",
   location: DEFAULT_LOCATION,
   showWeather: true,
   showPrayer: true,
@@ -87,31 +89,11 @@ export const settingsStore = createPersistedStore<Settings>({
 /* Tasks                                                               */
 /* ------------------------------------------------------------------ */
 
-export const taskSchema = z.object({
-  id: z.string(),
-  title: z.string().min(1).max(200),
-  description: z.string().max(2000).optional(),
-  dueDate: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/)
-    .optional(),
-  dueTime: z
-    .string()
-    .regex(/^\d{2}:\d{2}$/)
-    .optional(),
-  priority: z.enum(["low", "medium", "high"]),
-  tag: z.string().max(40).optional(),
-  reminder: z.string().optional(),
-  completed: z.boolean(),
-  completedAt: z.string().optional(),
-  createdAt: z.string(),
-  updatedAt: z.string(),
-});
-
 export const tasksStore = createPersistedStore({
   key: "tasks",
   version: 1,
-  schema: z.array(taskSchema),
+  sync: true,
+  schema: tasksSchema,
   defaults: [],
 });
 
@@ -119,42 +101,11 @@ export const tasksStore = createPersistedStore({
 /* Groceries                                                           */
 /* ------------------------------------------------------------------ */
 
-export const shoppingItemSchema = z.object({
-  id: z.string(),
-  productId: z.string().optional(),
-  name: z.string().min(1).max(80),
-  category: z.enum([
-    "grains",
-    "pulses",
-    "essentials",
-    "vegetables",
-    "fruits",
-    "dairy",
-    "meat",
-    "bakery",
-    "beverages",
-    "household",
-    "personal",
-    "baby",
-    "snacks",
-    "frozen",
-    "other",
-  ]),
-  quantity: z.number().positive().max(10000),
-  unit: z.enum(GROCERY_UNITS),
-  unitPrice: z.number().nonnegative().optional(),
-  priceIsSample: z.boolean().optional(),
-  notes: z.string().max(300).optional(),
-  purchased: z.boolean(),
-  order: z.number(),
-  createdAt: z.string(),
-  updatedAt: z.string(),
-});
-
 export const groceryStore = createPersistedStore({
   key: "groceries",
   version: 1,
-  schema: z.array(shoppingItemSchema),
+  sync: true,
+  schema: groceriesSchema,
   defaults: [],
 });
 
@@ -162,34 +113,10 @@ export const groceryStore = createPersistedStore({
 /* Quran                                                               */
 /* ------------------------------------------------------------------ */
 
-const verseRef = { surah: z.number().int().min(1).max(114), ayah: z.number().int().min(1).max(286) };
-
-export const quranSchema = z.object({
-  lastRead: z.object({ ...verseRef, at: z.string() }).nullable(),
-  bookmarks: z.array(z.object({ ...verseRef, createdAt: z.string(), note: z.string().optional() })),
-  /** Verses marked read, keyed "surah:ayah" → ISO date of first read. */
-  read: z.record(z.string(), z.string()),
-  reflections: z.array(
-    z.object({
-      ...verseRef,
-      id: z.string(),
-      arabic: z.string().optional(),
-      translation: z.string().optional(),
-      translationEdition: z.string().optional(),
-      lesson: z.string(),
-      application: z.string(),
-      notes: z.string(),
-      createdAt: z.string(),
-      updatedAt: z.string(),
-    }),
-  ),
-  dailyGoal: z.number().int().min(1).max(100),
-});
-export type QuranState = z.infer<typeof quranSchema>;
-
 export const quranStore = createPersistedStore<QuranState>({
   key: "quran",
   version: 1,
+  sync: true,
   schema: quranSchema,
   defaults: { lastRead: null, bookmarks: [], read: {}, reflections: [], dailyGoal: 5 },
 });
@@ -198,23 +125,11 @@ export const quranStore = createPersistedStore<QuranState>({
 /* News                                                                */
 /* ------------------------------------------------------------------ */
 
-export const articleSchema = z.object({
-  id: z.string(),
-  title: z.string(),
-  excerpt: z.string(),
-  url: z.string().url(),
-  imageUrl: z.string().optional(),
-  source: z.string(),
-  sourceId: z.string(),
-  publishedAt: z.string().optional(),
-  category: z.string(),
-  lang: z.enum(["en", "ur"]),
-});
-
 export const newsStore = createPersistedStore({
   key: "news",
   version: 1,
-  schema: z.object({ saved: z.array(articleSchema.extend({ savedAt: z.string() })) }),
+  sync: true,
+  schema: newsSchema,
   defaults: { saved: [] },
 });
 
@@ -225,18 +140,8 @@ export const newsStore = createPersistedStore({
 export const tvStore = createPersistedStore({
   key: "tv",
   version: 1,
-  schema: z.object({
-    favorites: z.array(z.string()),
-    recent: z.array(z.object({ id: z.string(), at: z.string() })),
-    custom: z.array(
-      z.object({
-        id: z.string(),
-        name: z.string().min(1).max(60),
-        category: z.enum(["news", "sports", "entertainment", "islamic", "educational", "regional", "kids", "other"]),
-        url: z.string().url(),
-      }),
-    ),
-  }),
+  sync: true,
+  schema: tvSchema,
   defaults: { favorites: [], recent: [], custom: [] },
 });
 
@@ -247,24 +152,8 @@ export const tvStore = createPersistedStore({
 export const activityStore = createPersistedStore<ActivityEvent[]>({
   key: "activity",
   version: 1,
-  schema: z.array(
-    z.object({
-      id: z.string(),
-      type: z.enum([
-        "task-completed",
-        "task-created",
-        "quran-read",
-        "reflection-saved",
-        "grocery-added",
-        "grocery-purchased",
-        "news-saved",
-        "tv-watched",
-      ]),
-      label: z.string(),
-      href: z.string().optional(),
-      at: z.string(),
-    }),
-  ),
+  sync: true,
+  schema: activitySchema,
   defaults: [],
 });
 

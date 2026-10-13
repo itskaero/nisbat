@@ -7,6 +7,7 @@ import { CommandPaletteProvider } from "@/features/search/command-palette";
 import { TaskDialogProvider } from "@/features/tasks/task-dialog";
 import { usePersisted } from "@/lib/storage/persisted-store";
 import { settingsStore } from "@/lib/storage/stores";
+import { startSync } from "@/lib/storage/sync";
 import { AmbientScreen } from "@/components/tv/ambient-screen";
 import { RemoteReceiver } from "@/components/tv/remote-receiver";
 import { TvController } from "@/components/tv/tv-controller";
@@ -17,6 +18,7 @@ import { TopBar } from "./topbar";
 /** Mirrors user preferences onto <html> (language, direction, text size, motion). */
 function DocumentPreferences() {
   const { language, textSize, motion } = usePersisted(settingsStore);
+  useEffect(() => startSync(), []);
   useEffect(() => {
     const html = document.documentElement;
     html.lang = language === "ur" ? "ur" : "en";

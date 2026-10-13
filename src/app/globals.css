@@ -6,7 +6,8 @@
 :root {
   --bg: #0b1220;
   --bg-deep: #070c16;
-  --surface: rgba(22, 34, 49, 0.78);
+  --surface: rgba(16, 26, 42, 0.5);
+  --surface-reading: rgba(12, 20, 33, 0.78);
   --surface-strong: rgba(18, 28, 42, 0.92);
   --surface-soft: rgba(255, 255, 255, 0.04);
   --surface-hover: rgba(255, 255, 255, 0.07);
@@ -23,7 +24,7 @@
   --radius-md: 16px;
   --radius-sm: 12px;
   --shadow: 0 18px 50px -20px rgba(0, 0, 0, 0.65);
-  --blur: 18px;
+  --blur: 22px;
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
   color-scheme: dark;
 }
@@ -92,9 +93,17 @@ html[dir="rtl"] body {
 @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .glass {
     background: var(--surface);
-    -webkit-backdrop-filter: blur(var(--blur)) saturate(140%);
-    backdrop-filter: blur(var(--blur)) saturate(140%);
+    -webkit-backdrop-filter: blur(var(--blur)) saturate(160%);
+    backdrop-filter: blur(var(--blur)) saturate(160%);
   }
+}
+/* Light catching the top edge of the glass. */
+.glass {
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0) 42%);
+}
+/* Long-reading surfaces (Quran text, headline lists) keep more opacity for contrast. */
+.glass.glass-reading {
+  background-color: var(--surface-reading);
 }
 .glass-soft {
   background: var(--surface-soft);
@@ -263,7 +272,7 @@ html[data-tv] body {
 html[data-tv] .glass {
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
-  background: var(--surface-strong);
+  background-color: rgba(12, 20, 33, 0.62);
 }
 html[data-tv] dialog.nb-dialog::backdrop {
   -webkit-backdrop-filter: none;
@@ -298,4 +307,16 @@ html[data-tv] .tv-hide {
 }
 html[data-tv] .tv-show {
   display: flex !important;
+}
+
+@keyframes backdrop-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.backdrop-fade {
+  animation: backdrop-fade 1.6s ease both;
 }

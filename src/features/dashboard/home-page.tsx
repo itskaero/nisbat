@@ -36,6 +36,7 @@ import { activityStore, groceryStore, quranStore, settingsStore, tasksStore, tvS
 import type { ActivityType, NewsResponse } from "@/types/domain";
 import { DailyVerse, PrayerCard, WeatherCard } from "./widgets";
 import { PairingCard } from "@/components/tv/pairing-card";
+import { SyncNote } from "@/components/sync-status";
 import { useTvMode } from "@/lib/tv/tv-mode";
 
 export function HomePage() {
@@ -76,9 +77,7 @@ export function HomePage() {
         <RecentActivity />
       </div>
       {tv && <PairingCard className="mx-auto max-w-2xl" />}
-      <p className="pb-2 text-center text-[11px] text-ink-3">
-        Your tasks, lists, bookmarks and notes are stored only in this browser on this device — they don&apos;t sync to family members or other devices.
-      </p>
+      <SyncNote className="pb-2" />
     </div>
   );
 }

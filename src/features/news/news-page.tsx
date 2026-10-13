@@ -161,7 +161,7 @@ export function NewsPage() {
                 ))}
               </ul>
             </div>
-            <Panel className="h-fit p-4 sm:p-5" aria-labelledby="latest-title">
+            <Panel className="glass-reading h-fit p-4 sm:p-5" aria-labelledby="latest-title">
               <h2 id="latest-title" className="mb-2 text-sm font-semibold">
                 {view === "saved" ? "Saved for later" : "Latest headlines"}
               </h2>

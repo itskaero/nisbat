@@ -14,6 +14,8 @@ import { allStores, useHydrated, usePersisted } from "@/lib/storage/persisted-st
 import { setAmbientOpen } from "@/lib/tv/ambient-state";
 import { tvModeReason, useTvMode } from "@/lib/tv/tv-mode";
 import { PairingCard } from "@/components/tv/pairing-card";
+import backgroundCredits from "@/data/background-credits.json";
+import { SyncNote } from "@/components/sync-status";
 import { quranStore, settingsStore, type Settings as SettingsT } from "@/lib/storage/stores";
 import type { SavedLocation } from "@/types/domain";
 
@@ -125,11 +127,28 @@ export function SettingsPage() {
             value={s.background}
             onChange={(v) => update({ background: v })}
             options={[
+              { value: "photo", label: "Photos (by time of day)" },
               { value: "dusk", label: "Dusk skyline" },
               { value: "night", label: "Night" },
               { value: "plain", label: "Plain" },
             ]}
           />
+          {s.background === "photo" && (
+            <p className="text-[11px] leading-relaxed text-ink-3">
+              Photos:{" "}
+              {Object.entries(backgroundCredits).map(([slot, c], i) => (
+                <span key={slot}>
+                  {i > 0 && " · "}
+                  <span className="capitalize">{slot}</span> —{" "}
+                  <a href={c.sourceUrl} target="_blank" rel="noreferrer" className="underline underline-offset-2">
+                    {c.title}
+                  </a>{" "}
+                  by {c.author} ({c.license})
+                </span>
+              ))}
+              . Cropped and resized.
+            </p>
+          )}
         </div>
         <div className="space-y-1.5">
           <p className="text-xs font-medium text-ink-2">Text size</p>
@@ -417,8 +436,9 @@ function DataControls() {
     <Section
       id="data"
       title="Your data"
-      description="Everything you create in Nisbat (tasks, Saman list, bookmarks, reflections, saved news, favourites) is stored only in this browser on this device. It does not sync between devices or family members. Export a backup to move it."
+      description="Tasks, the Saman list, Quran bookmarks, progress and reflections, saved news and TV favourites are shared with every Nisbat screen in your home through the Nisbat server, and also kept in this browser so they work offline. Settings on this page apply to this screen only. Export a backup to keep a copy."
     >
+      <SyncNote className="text-start" />
       <div className="flex flex-wrap gap-2">
         <Button variant="secondary" onClick={exportAll}>
           <Download className="size-4" /> Export backup
@@ -449,7 +469,7 @@ function DataControls() {
           toast("All local data cleared", { tone: "info" });
         }}
         title="Reset all Nisbat data?"
-        description="This permanently deletes your tasks, Saman list, Quran bookmarks, reflections, saved news, TV favourites and settings from this browser. Export a backup first if you might need them."
+        description="This permanently deletes your tasks, Saman list, Quran bookmarks, reflections, saved news, TV favourites and settings — on every synced Nisbat screen. Export a backup first if you might need them."
         confirmLabel="Delete everything"
       />
     </Section>
