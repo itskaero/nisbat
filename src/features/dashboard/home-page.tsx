@@ -38,6 +38,7 @@ import { DailyVerse, PrayerCard, WeatherCard } from "./widgets";
 import { PairingCard } from "@/components/tv/pairing-card";
 import { SyncNote } from "@/components/sync-status";
 import { useTvMode } from "@/lib/tv/tv-mode";
+import { SherCard } from "@/features/pakistan/pakistan-page";
 
 export function HomePage() {
   const t = useT();
@@ -66,6 +67,7 @@ export function HomePage() {
         <div className="grid grid-cols-[minmax(0,1fr)] content-start items-start gap-4 sm:grid-cols-[minmax(0,0.85fr)_minmax(0,1fr)]">
           <WeatherCard detailed />
           <PrayerCard />
+          <SherCard compact date={now ? todayKey(settings.timezone) : null} className="sm:col-span-2" />
         </div>
       </section>
 

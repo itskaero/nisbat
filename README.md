@@ -1,16 +1,21 @@
 # Nisbat Home
 
-A calm, immersive personal and family dashboard for Pakistani households. It brings Quran reflection, daily news, groceries, tasks and live TV together in one place.
+A calm, immersive personal and family dashboard for Pakistani households. It brings Quran reflection, prayer times, azkar, Urdu listening, Pakistan's history and poetry, daily news, weather and smog, groceries, tasks, family photos and live TV together in one place, on a Chromecast-connected TV and every phone in the house.
 
 | Module | What works |
 | --- | --- |
-| **Home** | Greeting and date in your time zone, daily Quran verse (with source), quick capture for tasks and groceries, live weather (hourly forecast, sunrise and sunset), prayer times with the next prayer highlighted, five module cards, today's plan, Tadabur progress, quick actions and recent activity |
+| **Home** | Greeting and date in your time zone, daily Quran verse (with source), quick capture for tasks and groceries, live weather (hourly forecast, sunrise and sunset), prayer times with the next prayer highlighted, AQI chip, sher of the day, five module cards, today's plan, Tadabur progress, quick actions and recent activity |
 | **Tadabur Quran** | All 114 surahs and Juz navigation, Uthmani Arabic text, 9 English and Urdu translations, verse-by-verse recitation from 8 reciters (play/pause, seek, previous/next, speed, volume, continuous play, fallback audio), bookmarks, last-read position, verse-level reading progress against a daily goal, "Verse by verse" and "Mushaf page" layouts, and a reflection workspace (create, edit and delete notes) |
 | **Ajj ka Haal (آج کا حال)** | Pakistan-first news from publisher RSS feeds in 9 sections, including Urdu (RTL). Includes a featured story, latest headlines, a reader view with excerpt and publisher link, save for later, share, search, refresh, and a status line for each source |
 | **Saman (سامان)** | A starter catalog of 120+ items of Pakistani groceries with English and Urdu names and category tiles. The add-item dialog prefills from the catalog, validates input, handles duplicates (merge or keep separate) and supports adding several items in a row. The shopping list supports purchased state, quantities, grouping and custom order, search and filter, an estimated PKR total, share, `.txt` export, and clear with confirmation |
 | **Tasks** | Create, edit and delete tasks with due date and time, priority, tag and a reminder note. Includes Today, Upcoming, Completed and All views, search, sorting, overdue indicators, a progress ring, undo, bulk delete with confirmation, and in-app notifications in the header |
 | **Live TV** | Channel directory with search, categories, favourites, recently watched, and previous/next. HLS player (hls.js, or native HLS on Safari) with loading, error and retry states. Also supports adding your own stream and an opt-in community playlist |
-| **Settings** | Name, English or Urdu interface (RTL), time zone, background, text size, reduced motion, city search for weather and prayer times, calculation method and Asr school, Quran defaults, sample prices, community streams, a live check of each data source, and export, import or reset of local data |
+| **Namaz (نماز)** | Today's times with a next-prayer countdown, a monthly timetable (AlAdhan), the Hijri month with major Islamic dates, and an on-screen reminder at each prayer you enable (full-screen in TV mode, optional soft chime synthesised in the browser; no azan recording is shipped) |
+| **Azkar & Hadith** | Morning, evening and other Hisn al-Muslim chapters (Arabic, transliteration, English, recitation audio) with per-dhikr counters, a large tasbeeh counter that the TV remote's OK button or a phone tap advances, and a hadith of the day in English and Urdu with its sunnah.com reference. Counts are shared across the family's screens and reset daily |
+| **Sunein (سنیں)** | An Urdu listening hub: curated Urdu podcasts (add more by iTunes search or by pasting an RSS link), YouTube channels the family follows (latest videos in YouTube's privacy-enhanced player), and Radio Pakistan stations. One player persists across screens with resume per episode, speed, ±15/30 s and media-key/remote control; "Continue listening" is shared across devices |
+| **Pakistan — Tareekh & Kalam** | The national calendar (16 dates, each linked to Wikipedia) with a countdown to the next one, a hero card on the day itself, Wikipedia's "On this day" filtered for Pakistan, and a sher of the day from Allama Iqbal or Mirza Ghalib in large Nastaliq (also on Home and the ambient screen) |
+| **Mausam & Smog** | Current conditions, 24-hour strip, 7-day forecast, sunrise/sunset arc, and US AQI with PM2.5/PM10 and health guidance (Open-Meteo / CAMS model estimates, labelled as such) |
+| **Settings** | Name, English or Urdu interface (RTL), time zone, background, text size, reduced motion, city search for weather and prayer times, calculation method and Asr school, prayer reminders, family photos (upload, delete, slideshow), Quran defaults, sample prices, community streams, a live check of each data source, and export, import or reset of local data |
 
 Universal search (**Ctrl/⌘ K** or **/**) covers pages, surahs, verse references (e.g. `2:255`), Quran translation text (through the API), saved news, groceries and tasks.
 
@@ -88,20 +93,28 @@ The app uses Next.js 15 (App Router), React 19, TypeScript, Tailwind CSS v4, luc
 
 ```
 src/
-  app/                     routes (/, /quran, /news, /saman, /tasks, /tv, /settings) + api/ route handlers
+  app/                     routes (/, /quran, /namaz, /azkar, /sunein, /pakistan, /news, /mausam, /saman, /tasks, /tv, /remote, /cast, /settings) + api/
   components/layout/       app shell, sidebar/mobile nav, top bar, atmospheric backdrop
   components/ui/           buttons, inputs, dialog (native <dialog>), toasts, chips, tabs, empty states…
   features/<module>/       domain UI + logic: dashboard, quran, news, groceries, tasks, live-tv, search, settings
-  lib/storage/             versioned, zod-validated localStorage stores (SSR-safe)
+  lib/storage/             versioned, zod-validated stores (localStorage + server sync)
+  lib/server/              JSON file store, photo storage, URL safety checks
   lib/api/http.ts          server fetch helper (timeouts, revalidation)
   lib/dates, lib/i18n.ts   time-zone helpers, English/Urdu strings
   data/                    grocery catalog, Quran metadata, TV channel directory, image credits
 scripts/                   grocery image pipeline (Openverse → reviewed → public/groceries)
 ```
 
-### Data and persistence
+### Data and persistence (family sync)
 
-Tasks, the Saman list, Quran bookmarks, progress and reflections, saved news, TV favourites and settings are stored in **this browser's localStorage only**. Nothing syncs across devices or family members. **Settings → Your data** can export and import a JSON backup.
+Tasks, the Saman list, Quran bookmarks, progress and reflections, saved news, TV favourites, recent activity, azkar counts and Sunein subscriptions/progress are **shared by every screen that uses the same Nisbat server**: the TV, phones and laptops all see one list. Settings stay per device.
+
+* The server keeps one JSON file per store in `NISBAT_DATA_DIR` (default `./data`, git-ignored), written atomically with a version counter. Family photos live in `<data dir>/photos`.
+* `GET/PUT /api/store/<key>` validate against the same zod schemas the client uses; `/api/store/events` (Server-Sent Events) tells other screens to refresh.
+* Each browser keeps a localStorage copy, so the app works offline; changes made offline are pushed when the server is reachable again. The first time a device joins, its local items are merged with the server's (by id). After that, the last write wins per store.
+* There are no accounts: anyone who can reach the server can read and change the shared data. Keep it on your home network (or behind your own VPN/tunnel with authentication).
+
+**Settings → Your data** can still export and import a JSON backup.
 
 Each store is versioned (`{ v, data }`) and validated with zod when it's read. If a value is malformed it falls back to defaults, and the bad payload is kept under `<key>:corrupt`. Feature code only talks to `createPersistedStore`, so moving to a real database later means replacing that layer, not the features.
 
@@ -115,6 +128,16 @@ Each store is versioned (`{ v, data }`) and validated with zod when it's read. I
 | Weather and geocoding | [Open-Meteo](https://open-meteo.com) (CC BY 4.0) | The provider and observation time are shown. |
 | Prayer times | [AlAdhan](https://aladhan.com/prayer-times-api) | The method and Asr school are shown and configurable. |
 | Grocery photos | [Openverse](https://openverse.org): CC BY, CC BY-SA, CC0 | Each photo was reviewed by hand. Credits appear in the app (Saman → "view image credits") and in `src/data/grocery-images.json`. |
+| Prayer timetable and Hijri dates | AlAdhan `calendar` | Islamic dates shown are a short curated list; the moon-sighting date in Pakistan can differ by a day, which the page notes. |
+| Air quality | [Open-Meteo Air Quality](https://open-meteo.com/en/docs/air-quality-api) (CAMS, CC BY 4.0) | Model estimate, not station readings; labelled. |
+| Adhkar | [hisnmuslim.com](https://www.hisnmuslim.com) API (Hisn al-Muslim) | Arabic, English and audio, attributed on the page. |
+| Hadith of the day | [fawazahmed0/hadith-api](https://github.com/fawazahmed0/hadith-api) (Unlicense) via jsDelivr | A curated list of Sahih al-Bukhari numbers; each links to sunnah.com. |
+| Podcasts | Publisher RSS feeds; discovery via the iTunes Search API | Audio streams from the publisher. Nothing is downloaded or rehosted. Feed URLs must be public HTTPS (no IP addresses or local hosts) and are capped at 5 MB. |
+| YouTube | Channel RSS (`youtube.com/feeds/videos.xml`) + `youtube-nocookie.com` embed | Official player only; no downloading or ad removal. |
+| Radio | Radio Pakistan's own streams (`radio.gov.pk`) | Broadcaster provenance. |
+| On this day | [Wikipedia REST API](https://en.wikipedia.org/api/rest_v1/) (CC BY-SA 4.0) | Filtered to Pakistan-related entries, attributed and linked. |
+| Poetry | Allama Iqbal (d. 1938) and Mirza Ghalib (d. 1869), public domain | 16 couplets, each checked against [Rekhta](https://www.rekhta.org) and linked there. |
+| Backgrounds | Flickr via Openverse (CC BY 2.0 / Public Domain Mark) | Four photos (dawn, day, dusk, night), reviewed by hand. Credits: Settings → Background and `src/data/background-credits.json`; regenerate with `scripts/fetch-backgrounds.py`. |
 | Grocery prices | — | Rough **sample estimates**, always labelled. They can be turned off in Settings and are not market prices. |
 
 The "Islamic & Community" news section is not offered yet, because no suitable publisher feed has been verified. Add one in `src/features/news/sources.ts` to enable it.
@@ -141,6 +164,10 @@ python3 -I scripts/fetch-grocery-images.py apply /tmp/gimg        # writes publi
 ```
 
 ## Known limitations
+
+* Some sources could not be fully verified from the development sandbox: Radio Pakistan streams use non-443 ports that the sandbox blocks, YouTube channel feeds intermittently returned errors, and Wikipedia rate-limited some requests (some national-calendar article links were not checked). The app shows a clear error with Retry whenever a source fails.
+* Family sync and the phone remote need **one long-lived Node server**; they will not work on multi-instance serverless hosting.
+* Prayer reminders appear only while Nisbat is open on a screen (there are no push notifications).
 
 * The Urdu interface covers navigation, headings, greetings and common actions. Some secondary labels are still in English.
 * Language and direction are applied after hydration, so Urdu users may see a brief flash of the English layout.

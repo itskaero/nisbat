@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { AqiChip } from "@/features/mausam/aqi-chip";
+import { sherForDate } from "@/features/pakistan/data";
 import { describeWeather, dailyVerseRef } from "@/features/dashboard/widgets";
 import { formatHHMM, formatLongDate, nowHHMM, todayKey, zonedParts } from "@/lib/dates";
 import { useFetch, useNow } from "@/lib/hooks";
@@ -89,6 +90,9 @@ function AmbientContent({ onClose }: { onClose: () => void }) {
     return () => clearInterval(t);
   }, []);
   const headlines = news.data?.items.slice(0, 10) ?? [];
+  // Alternate the verse and the couplet of the day every 30 s.
+  const showSher = Math.floor(headlineIdx / 2) % 2 === 1;
+  const sher = sherForDate(date);
   const headline = headlines.length ? headlines[headlineIdx % headlines.length] : undefined;
 
   const parts = zonedParts(now, tz);
@@ -160,8 +164,16 @@ function AmbientContent({ onClose }: { onClose: () => void }) {
         </div>
 
         <div className="max-w-[70vw] space-y-6">
-          {verse.data && (
-            <figure>
+          {showSher ? (
+            <figure key="sher" className="animate-fade-up">
+              <blockquote lang="ur" dir="rtl" className="font-urdu w-fit text-[clamp(1.4rem,2.6vw,2.4rem)] leading-[2.3] text-ink">
+                <p>{sher.lines[0]}</p>
+                <p>{sher.lines[1]}</p>
+              </blockquote>
+              <figcaption className="mt-1 text-[clamp(0.85rem,1.2vw,1.05rem)] text-ink-3">{sher.poet}</figcaption>
+            </figure>
+          ) : verse.data && (
+            <figure key="verse" className="animate-fade-up">
               <blockquote className="line-clamp-3 text-[clamp(1.2rem,2.2vw,2rem)] leading-snug text-ink">“{verse.data.translation}”</blockquote>
               <figcaption className="mt-2 text-[clamp(0.85rem,1.2vw,1.05rem)] text-ink-3">
                 Quran {verse.data.surah}:{verse.data.ayah} · {verse.data.surahName}
