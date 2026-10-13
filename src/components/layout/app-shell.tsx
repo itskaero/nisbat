@@ -9,6 +9,7 @@ import { usePersisted } from "@/lib/storage/persisted-store";
 import { settingsStore } from "@/lib/storage/stores";
 import { startSync } from "@/lib/storage/sync";
 import { AmbientScreen } from "@/components/tv/ambient-screen";
+import { PrayerReminder } from "@/features/namaz/prayer-reminder";
 import { RemoteReceiver } from "@/components/tv/remote-receiver";
 import { TvController } from "@/components/tv/tv-controller";
 import { Atmosphere } from "./atmosphere";
@@ -57,6 +58,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </div>
             <MobileNav />
             <AmbientScreen />
+            <PrayerReminder />
           </CommandPaletteProvider>
         </TaskDialogProvider>
       </GroceryDialogProvider>

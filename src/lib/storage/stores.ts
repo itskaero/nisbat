@@ -43,6 +43,9 @@ export const settingsSchema = z.object({
   displayMode: z.enum(["auto", "standard", "tv"]),
   /** Minutes of inactivity before the ambient screen appears in TV mode (0 = never). */
   ambientMinutes: z.number().int().min(0).max(120),
+  /** Show a prayer-time card on screen (and optional chime) at each enabled prayer. */
+  prayerReminders: z.array(z.enum(["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"])),
+  reminderChime: z.boolean(),
 });
 export type Settings = z.infer<typeof settingsSchema>;
 
@@ -74,6 +77,8 @@ const SETTINGS_DEFAULTS: Settings = {
   sidebarCollapsed: false,
   displayMode: "auto",
   ambientMinutes: 5,
+  prayerReminders: ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"],
+  reminderChime: true,
 };
 
 export const settingsStore = createPersistedStore<Settings>({

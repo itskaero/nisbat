@@ -1,6 +1,8 @@
 "use client";
 
-import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { LayoutGrid, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { useState } from "react";
+import { Dialog } from "@/components/ui/dialog";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/components/ui/primitives";
@@ -88,32 +90,57 @@ export function MobileNav() {
   const pathname = usePathname();
   const t = useT();
   const { language } = usePersisted(settingsStore);
+  const [moreOpen, setMoreOpen] = useState(false);
+  const label = (item: { key: Parameters<typeof t>[0]; short: string }) => (language === "ur" ? t(item.key) : item.short);
+  const primary = NAV_ITEMS.filter((i) => i.mobile);
+  const moreActive = !primary.some((i) => isActive(pathname, i.href));
+  const cell = (active: boolean) => cn("flex h-16 w-full flex-col items-center justify-center gap-1 text-[10px] font-medium", active ? "text-emerald" : "text-ink-3");
   return (
     <nav
       aria-label="Primary"
       className="tv-hide fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[rgba(10,16,28,0.94)] pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden"
     >
       <ul className="grid grid-cols-6">
-        {NAV_ITEMS.map((item) => {
+        {primary.map((item) => {
           const active = isActive(pathname, item.href);
           const Icon = item.icon;
           return (
             <li key={item.href}>
-              <Link
-                href={item.href}
-                aria-current={active ? "page" : undefined}
-                className={cn(
-                  "flex h-16 flex-col items-center justify-center gap-1 text-[10px] font-medium",
-                  active ? "text-emerald" : "text-ink-3",
-                )}
-              >
+              <Link href={item.href} aria-current={active ? "page" : undefined} className={cell(active)}>
                 <Icon className="size-5" aria-hidden />
-                <span className="max-w-full truncate px-0.5">{language === "ur" ? t(item.key) : item.short}</span>
+                <span className="max-w-full truncate px-0.5">{label(item)}</span>
               </Link>
             </li>
           );
         })}
+        <li>
+          <button type="button" className={cell(moreActive)} aria-haspopup="dialog" onClick={() => setMoreOpen(true)}>
+            <LayoutGrid className="size-5" aria-hidden />
+            <span>{language === "ur" ? t("nav.more") : "More"}</span>
+          </button>
+        </li>
       </ul>
+      <Dialog open={moreOpen} onClose={() => setMoreOpen(false)} title={t("nav.more")} size="sm">
+        <ul className="grid grid-cols-3 gap-2">
+          {[...NAV_ITEMS, { ...SETTINGS_ITEM, short: "Settings" }].map((item) => {
+            const active = isActive(pathname, item.href);
+            const Icon = item.icon;
+            return (
+              <li key={item.href}>
+                <Link
+                  href={item.href}
+                  onClick={() => setMoreOpen(false)}
+                  aria-current={active ? "page" : undefined}
+                  className={cn("glass-soft flex flex-col items-center gap-1.5 px-1 py-3 text-center text-xs", active ? "border-emerald/40 text-emerald" : "text-ink-2")}
+                >
+                  <Icon className="size-5" aria-hidden />
+                  {t(item.key)}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </Dialog>
     </nav>
   );
 }

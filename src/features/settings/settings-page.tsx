@@ -202,6 +202,26 @@ export function SettingsPage() {
         <p className="text-[11px] text-ink-3">Calculated times can differ from your local masjid by a few minutes.</p>
       </Section>
 
+      <Section id="namaz" title="Prayer reminders" description="An on-screen card at each selected prayer time. On the TV it fills the screen until dismissed with OK.">
+        <div className="flex flex-wrap gap-2" role="group" aria-label="Remind me at">
+          {(["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"] as const).map((p) => {
+            const on = s.prayerReminders.includes(p);
+            return (
+              <button
+                key={p}
+                type="button"
+                aria-pressed={on}
+                onClick={() => update({ prayerReminders: on ? s.prayerReminders.filter((x) => x !== p) : [...s.prayerReminders, p] })}
+                className={cn("h-9 rounded-full border px-4 text-sm", on ? "border-emerald/50 bg-emerald/15 text-emerald" : "border-white/12 text-ink-2")}
+              >
+                {p}
+              </button>
+            );
+          })}
+        </div>
+        <Switch label="Play a soft chime" description="A short bell synthesised by Nisbat. Adhan audio isn't included because no openly licensed recording has been verified yet." checked={s.reminderChime} onChange={(v) => update({ reminderChime: v })} />
+      </Section>
+
       <Section id="quran" title="Tadabur Quran">
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Translation" htmlFor={`${id}-tr`}>
