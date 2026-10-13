@@ -3,7 +3,7 @@
 import { z } from "zod";
 import { createPersistedStore, uid } from "./persisted-store";
 import type { ActivityEvent, ActivityType } from "@/types/domain";
-import { activitySchema, groceriesSchema, newsSchema, quranSchema, tasksSchema, tvSchema, type QuranState } from "./schemas";
+import { activitySchema, azkarSchema, groceriesSchema, newsSchema, quranSchema, tasksSchema, tvSchema, type QuranState } from "./schemas";
 
 export type { QuranState };
 
@@ -196,4 +196,16 @@ export const phoneRemoteStore = createPersistedStore({
   version: 1,
   schema: z.object({ code: z.string().regex(/^[A-Z2-9]{6}$/).nullable() }),
   defaults: { code: null },
+});
+
+/* ------------------------------------------------------------------ */
+/* Azkar                                                               */
+/* ------------------------------------------------------------------ */
+
+export const azkarStore = createPersistedStore({
+  key: "azkar",
+  version: 1,
+  sync: true,
+  schema: azkarSchema,
+  defaults: { date: "", counts: {}, tasbeeh: { count: 0, target: 33, total: 0 } },
 });

@@ -135,6 +135,13 @@ export const activitySchema = z.array(
     }),
   );
 
+export const azkarSchema = z.object({
+  /** Day (YYYY-MM-DD) the per-dhikr counts belong to; they reset each day. */
+  date: z.string(),
+  counts: z.record(z.string(), z.number().int().min(0)),
+  tasbeeh: z.object({ count: z.number().int().min(0), target: z.number().int().min(1).max(10000), total: z.number().int().min(0) }),
+});
+
 /** Store keys synced through the Nisbat server, with their schemas. */
 export const SYNCED_SCHEMAS = {
   tasks: tasksSchema,
@@ -143,5 +150,6 @@ export const SYNCED_SCHEMAS = {
   news: newsSchema,
   tv: tvSchema,
   activity: activitySchema,
+  azkar: azkarSchema,
 } as const;
 export type SyncedKey = keyof typeof SYNCED_SCHEMAS;
