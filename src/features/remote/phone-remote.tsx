@@ -27,6 +27,7 @@ import {
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { BrandMark } from "@/components/layout/brand";
+import { PhotoUploadButton } from "@/features/photos/photo-manager";
 import { Button, IconButton, Input, Segmented, Select, cn } from "@/components/ui/primitives";
 import { useToast } from "@/components/ui/toast";
 import { CHANNELS } from "@/data/channels";
@@ -238,6 +239,13 @@ function Controller({ code }: { code: string }) {
               {label}
             </button>
           ))}
+        </div>
+      </Section>
+
+      <Section title="Family photo frame">
+        <div className="glass flex items-center gap-3 p-3">
+          <p className="min-w-0 flex-1 text-xs text-ink-2">Share photos from this phone — they appear on the TV&apos;s ambient screen.</p>
+          <PhotoUploadButton label="Send photos" />
         </div>
       </Section>
 

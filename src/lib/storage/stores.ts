@@ -46,6 +46,8 @@ export const settingsSchema = z.object({
   /** Show a prayer-time card on screen (and optional chime) at each enabled prayer. */
   prayerReminders: z.array(z.enum(["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"])),
   reminderChime: z.boolean(),
+  /** Show family photos behind the clock on the ambient screen. */
+  ambientPhotos: z.boolean(),
 });
 export type Settings = z.infer<typeof settingsSchema>;
 
@@ -79,6 +81,7 @@ const SETTINGS_DEFAULTS: Settings = {
   ambientMinutes: 5,
   prayerReminders: ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"],
   reminderChime: true,
+  ambientPhotos: true,
 };
 
 export const settingsStore = createPersistedStore<Settings>({

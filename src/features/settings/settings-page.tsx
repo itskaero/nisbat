@@ -14,6 +14,7 @@ import { allStores, useHydrated, usePersisted } from "@/lib/storage/persisted-st
 import { setAmbientOpen } from "@/lib/tv/ambient-state";
 import { tvModeReason, useTvMode } from "@/lib/tv/tv-mode";
 import { PairingCard } from "@/components/tv/pairing-card";
+import { PhotoManager } from "@/features/photos/photo-manager";
 import backgroundCredits from "@/data/background-credits.json";
 import { SyncNote } from "@/components/sync-status";
 import { quranStore, settingsStore, type Settings as SettingsT } from "@/lib/storage/stores";
@@ -99,6 +100,11 @@ export function SettingsPage() {
             <p className="text-xs text-ink-3">The phone remote connects to screens running in TV mode. Switch this screen to TV mode to show its pairing code.</p>
           )}
         </div>
+      </Section>
+
+      <Section id="photos" title="Family photo frame" description="Photos shared from any phone or computer appear on the TV's ambient screen, like a digital photo frame.">
+        <Switch label="Show photos on the ambient screen" checked={s.ambientPhotos} onChange={(v) => update({ ambientPhotos: v })} />
+        <PhotoManager />
       </Section>
 
       <Section id="language" title="Language & region">

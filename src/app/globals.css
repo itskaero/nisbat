@@ -320,3 +320,17 @@ html[data-tv] .tv-show {
 .backdrop-fade {
   animation: backdrop-fade 1.6s ease both;
 }
+
+@keyframes ambient-kenburns {
+  from {
+    transform: scale(1.04) translate(0, 0);
+  }
+  to {
+    transform: scale(1.12) translate(-1.5%, -1%);
+  }
+}
+.ambient-kenburns {
+  animation:
+    backdrop-fade 1.6s ease both,
+    ambient-kenburns 20s ease-out both;
+}

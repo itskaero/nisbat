@@ -120,6 +120,7 @@ function AmbientContent({ onClose }: { onClose: () => void }) {
       onClick={onClose}
     >
       <div aria-hidden className="ambient-sky absolute inset-0" />
+      {settings.ambientPhotos && <PhotoSlideshow />}
       <div
         className="relative flex h-full flex-col justify-between p-[6vh_6vw] transition-transform duration-[3000ms]"
         style={{ transform: `translate(${drift.x}px, ${drift.y}px)` }}
@@ -178,6 +179,27 @@ function AmbientContent({ onClose }: { onClose: () => void }) {
           </p>
         </div>
       </div>
+    </div>
+  );
+}
+
+/** Crossfading family photos behind the ambient clock (Ken Burns drift, legibility scrim). */
+function PhotoSlideshow() {
+  const { data } = useFetch<{ photos: { id: string; url: string }[] }>("/api/photos");
+  const photos = data?.photos ?? [];
+  const [i, setI] = useState(0);
+  useEffect(() => {
+    if (photos.length < 2) return;
+    const t = setInterval(() => setI((n) => n + 1), 20_000);
+    return () => clearInterval(t);
+  }, [photos.length]);
+  if (!photos.length) return null;
+  const photo = photos[i % photos.length];
+  return (
+    <div aria-hidden className="absolute inset-0 overflow-hidden">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img key={photo.id} src={photo.url} alt="" className="backdrop-fade ambient-kenburns absolute inset-0 h-full w-full object-cover" />
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(7,12,22,0.7)_0%,rgba(7,12,22,0.25)_40%,rgba(7,12,22,0.35)_60%,rgba(7,12,22,0.85)_100%)]" />
     </div>
   );
 }
