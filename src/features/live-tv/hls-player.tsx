@@ -3,6 +3,7 @@
 import { AlertTriangle, Loader2, RefreshCw } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/primitives";
+import { notifyMediaChange, registerMedia } from "@/lib/tv/media-registry";
 import type { Channel } from "@/types/domain";
 
 type State = "idle" | "loading" | "playing" | "error";
@@ -26,7 +27,17 @@ function describeUrl(url: string): { ok: true; kind: "hls" | "mp4" } | { ok: fal
  * (Safari/iOS), hls.js elsewhere. Reports network/media errors and offers a
  * retry. Does not attempt to bypass DRM, tokens, referrer checks or geo-blocks.
  */
-export function HlsPlayer({ channel, onPlaying }: { channel: Channel; onPlaying?: () => void }) {
+export function HlsPlayer({
+  channel,
+  onPlaying,
+  onNext,
+  onPrev,
+}: {
+  channel: Channel;
+  onPlaying?: () => void;
+  onNext?: () => void;
+  onPrev?: () => void;
+}) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [state, setState] = useState<State>("idle");
   const [error, setError] = useState<string>();
@@ -36,6 +47,29 @@ export function HlsPlayer({ channel, onPlaying }: { channel: Channel; onPlaying?
   playingRef.current = onPlaying;
 
   const retry = useCallback(() => setAttempt((a) => a + 1), []);
+  const nav = useRef({ onNext, onPrev });
+  nav.current = { onNext, onPrev };
+
+  // Remote / media-key control: play-pause and channel up/down.
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    const off = registerMedia({
+      id: "live-tv",
+      label: `Live TV · ${channel.name}`,
+      isPlaying: () => !video.paused,
+      toggle: () => (video.paused ? void video.play().catch(() => undefined) : video.pause()),
+      next: () => nav.current.onNext?.(),
+      prev: () => nav.current.onPrev?.(),
+    });
+    video.addEventListener("play", notifyMediaChange);
+    video.addEventListener("pause", notifyMediaChange);
+    return () => {
+      off();
+      video.removeEventListener("play", notifyMediaChange);
+      video.removeEventListener("pause", notifyMediaChange);
+    };
+  }, [channel.name]);
 
   useEffect(() => {
     const video = videoRef.current;

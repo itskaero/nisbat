@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { Amiri, Fraunces, Inter, Noto_Naskh_Arabic, Noto_Nastaliq_Urdu } from "next/font/google";
-import { AppShell } from "@/components/layout/app-shell";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--nf-inter", display: "swap" });
@@ -25,9 +24,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" dir="ltr" className={`${inter.variable} ${fraunces.variable} ${amiri.variable} ${naskh.variable} ${nastaliq.variable}`} suppressHydrationWarning>
-      <body>
-        <AppShell>{children}</AppShell>
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

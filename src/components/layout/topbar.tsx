@@ -28,7 +28,7 @@ export function TopBar() {
 
       <button
         type="button"
-        onClick={open}
+        onClick={() => open()}
         className="glass group flex h-11 min-w-0 flex-1 items-center gap-3 !rounded-2xl px-4 text-start text-sm text-ink-3 transition-colors hover:text-ink-2 md:max-w-md"
         aria-label="Open search"
         aria-keyshortcuts="Control+K Meta+K"
@@ -104,6 +104,7 @@ function NotificationsButton() {
       {open && (
         <div
           role="dialog"
+          data-popover-open
           aria-label={t("notifications")}
           className="glass animate-fade-up absolute end-0 top-12 z-50 w-[min(340px,calc(100vw-2rem))] !bg-[rgba(14,22,35,0.97)] p-2"
         >

@@ -242,3 +242,60 @@ html[data-motion="reduced"] *::after {
   transition-duration: 0.01ms !important;
   scroll-behavior: auto !important;
 }
+
+/* TV (10-foot) mode ---------------------------------------------------- */
+html[data-tv] {
+  /* Scale the whole rem-based UI with the screen: 20px root at 1920px wide. */
+  font-size: max(16px, calc(100vw / 96));
+}
+html[data-tv][data-text-size="lg"] {
+  font-size: max(18px, calc(100vw / 86));
+}
+html[data-tv][data-text-size="xl"] {
+  font-size: max(20px, calc(100vw / 78));
+}
+html[data-tv] body {
+  /* Title-safe margin for TVs that overscan. */
+  padding: 1.5vh 1.5vw;
+  cursor: none;
+}
+/* Chromecast GPUs struggle with live blur; use solid glass. */
+html[data-tv] .glass {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  background: var(--surface-strong);
+}
+html[data-tv] dialog.nb-dialog::backdrop {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  background: rgba(4, 8, 16, 0.8);
+}
+html[data-tv] :focus-visible,
+html[data-tv] :focus {
+  outline: 3px solid var(--emerald);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 6px rgba(69, 212, 154, 0.25), 0 0 28px rgba(69, 212, 154, 0.35);
+}
+
+.ambient-sky {
+  background:
+    radial-gradient(60% 50% at 75% 85%, rgba(217, 138, 85, 0.35), transparent 70%),
+    radial-gradient(50% 40% at 20% 20%, rgba(101, 199, 232, 0.12), transparent 70%),
+    linear-gradient(180deg, #070c16 0%, #121a33 45%, #3a2a45 80%, #5a3540 100%);
+  background-size: 140% 140%;
+  animation: ambient-drift 60s ease-in-out infinite alternate;
+}
+@keyframes ambient-drift {
+  from {
+    background-position: 0% 0%;
+  }
+  to {
+    background-position: 100% 100%;
+  }
+}
+html[data-tv] .tv-hide {
+  display: none !important;
+}
+html[data-tv] .tv-show {
+  display: flex !important;
+}

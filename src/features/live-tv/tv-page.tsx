@@ -111,7 +111,7 @@ export function TvPage() {
         <div className="space-y-4">
           <Panel className="p-3 sm:p-4">
             {selected?.stream ? (
-              <HlsPlayer key={selected.id} channel={selected} onPlaying={onPlaying} />
+              <HlsPlayer key={selected.id} channel={selected} onPlaying={onPlaying} onNext={() => step(1)} onPrev={() => step(-1)} />
             ) : selected ? (
               <UnavailableCard channel={selected} />
             ) : (

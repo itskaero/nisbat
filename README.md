@@ -14,6 +14,63 @@ A calm, immersive personal and family dashboard for Pakistani households. It bri
 
 Universal search (**Ctrl/⌘ K** or **/**) covers pages, surahs, verse references (e.g. `2:255`), Quran translation text (through the API), saved news, groceries and tasks.
 
+## Chromecast / TV dashboard
+
+Nisbat is designed to replace the stock Chromecast backdrop: it comes up on the TV by itself, and you control it from the TV remote or your phone.
+
+```
+ ┌──────────── Nisbat server (one Node process, e.g. home PC / Raspberry Pi) ───────────┐
+ │  Next.js app  ·  /api/* data adapters  ·  /api/remote/* relay (SSE)                  │
+ └───────▲──────────────────────────────▲───────────────────────────────▲───────────────┘
+         │ loads /cast (receiver)        │ commands / TV state            │ checks & launches
+   ┌─────┴──────┐                  ┌─────┴──────┐                  ┌──────┴────────┐
+   │ Chromecast │ ◀── D-pad keys ──│ TV remote  │     phone ──▶    │ autocast.py   │
+   │  TV mode   │                  └────────────┘   /remote page   └───────────────┘
+   └────────────┘
+```
+
+**TV mode** turns on automatically for Chromecast and Google TV browsers (the `CrKey`/Google TV user agents), for any URL opened with `?tv=1`, or from Settings → TV & Chromecast. In TV mode Nisbat:
+
+* scales the layout for viewing from across the room, with title-safe margins and large focus rings
+* drops live blur, which Chromecast GPUs struggle with
+* moves focus with the D-pad: OK selects and **Back** closes dialogs or goes back. Play/pause and track keys control Quran recitation and Live TV.
+* shows an **ambient screen** after a set period of inactivity (1–60 minutes, or never). It shows a clock, Hijri date, weather, a countdown to the next prayer, the daily verse and rotating Pakistan headlines, with a slow drift to prevent burn-in. It never covers playing video or recitation.
+
+**Phone remote:** open `http://<nisbat-server>/remote` on a phone on the same network. Then scan the QR code or type the 6-character code shown on the TV (Home in TV mode, Settings → Phone remote, or the bottom of the ambient screen). The remote offers:
+
+* a D-pad (hold to repeat), OK, Back, Home, play/pause and previous/next
+* screen shortcuts
+* "type on TV", which searches or fills the focused field
+* quick add for a task or a Saman item (saved on the TV)
+* Live TV channels and a surah picker
+
+It also shows what the TV is currently displaying.
+
+Commands go through the Nisbat server (`/api/remote/*`, Server-Sent Events), so any phone browser works. The relay is in-memory, so **run Nisbat as a single long-lived Node server** (`npm run build && npm start`) rather than on multi-instance serverless hosting. Anyone on your network who knows the code can control the screen. Use **New code** in Settings to disconnect all paired phones.
+
+### Auto-casting it to the Chromecast
+
+`scripts/autocast.py` runs on any always-on machine on the same network. Every minute it checks the Chromecast. When the Chromecast is idle (backdrop or nothing playing), the script launches Nisbat. It never interrupts YouTube, Netflix or anything else that is casting.
+
+```bash
+pip install pychromecast
+# Quickest: uses the open-source DashCast receiver to show <url>/?tv=1
+python3 scripts/autocast.py --device "Living Room TV" --url http://192.168.1.20:3000
+# Recommended: your own Nisbat receiver (see below)
+python3 scripts/autocast.py --device "Living Room TV" --app-id ABCD1234
+```
+
+To use your own receiver:
+
+1. Serve Nisbat over **HTTPS**. Cast receivers must be HTTPS; a reverse proxy or tunnel with a certificate works.
+2. In the [Google Cast SDK Developer Console](https://cast.google.com/publish) (one-time US$5 registration), add a **Custom Receiver** whose URL is `https://<your-host>/cast`.
+3. While the app is unpublished, register your Chromecast's serial number for testing. Reboot the Chromecast.
+4. Pass the App ID to `autocast.py --app-id`.
+
+The receiver runs Google's Cast Application Framework with the idle timeout turned off, shows Nisbat full screen in TV mode, and accepts `{ "type": "navigate", "path": "/quran" }` messages on `urn:x-cast:pk.nisbat.app`. Opened in an ordinary browser, `/cast` is just a preview.
+
+On a **Chromecast with Google TV** you can also open `http://<nisbat-server>/?tv=1` in a kiosk browser app installed on the TV. Either way, the TV remote's D-pad and the phone remote both work.
+
 ## Getting started
 
 ```bash
@@ -87,5 +144,7 @@ python3 -I scripts/fetch-grocery-images.py apply /tmp/gimg        # writes publi
 
 * The Urdu interface covers navigation, headings, greetings and common actions. Some secondary labels are still in English.
 * Language and direction are applied after hydration, so Urdu users may see a brief flash of the English layout.
+* I couldn't test casting against real Chromecast hardware from the development environment. The receiver and autocast script follow the documented Cast SDK and pychromecast APIs; please check them on your device.
+* Live TV playback relies on the TV's browser being able to decode H.264/AAC HLS. Chromecast can.
 * There are no push or scheduled notifications. Task reminders are stored as notes and shown in the app only.
 * Live streams can go offline or change URL at any time. The player then shows an error with Retry and a link to the official website.

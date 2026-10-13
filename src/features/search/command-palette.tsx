@@ -16,7 +16,7 @@ import { usePersisted } from "@/lib/storage/persisted-store";
 import { groceryStore, newsStore, settingsStore, tasksStore } from "@/lib/storage/stores";
 
 interface Ctx {
-  open: () => void;
+  open: (query?: string) => void;
 }
 const PaletteContext = createContext<Ctx | null>(null);
 
@@ -28,7 +28,11 @@ export function useCommandPalette() {
 
 export function CommandPaletteProvider({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
-  const openFn = useCallback(() => setOpen(true), []);
+  const [initial, setInitial] = useState({ query: "", key: 0 });
+  const openFn = useCallback((query?: string) => {
+    setInitial((i) => ({ query: query ?? "", key: i.key + 1 }));
+    setOpen(true);
+  }, []);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -50,7 +54,7 @@ export function CommandPaletteProvider({ children }: { children: ReactNode }) {
   return (
     <PaletteContext.Provider value={value}>
       {children}
-      {open && <Palette onClose={() => setOpen(false)} />}
+      {open && <Palette key={initial.key} initialQuery={initial.query} onClose={() => setOpen(false)} />}
     </PaletteContext.Provider>
   );
 }
@@ -67,13 +71,13 @@ interface Result {
 
 const norm = (s: string) => s.toLowerCase().replace(/[-'’ʿ`\s]+/g, "");
 
-function Palette({ onClose }: { onClose: () => void }) {
+function Palette({ onClose, initialQuery = "" }: { onClose: () => void; initialQuery?: string }) {
   const t = useT();
   const router = useRouter();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const listId = useId();
-  const [q, setQ] = useState("");
+  const [q, setQ] = useState(initialQuery);
   const [active, setActive] = useState(0);
   const debounced = useDebounced(q.trim(), 300);
   const tasks = usePersisted(tasksStore);

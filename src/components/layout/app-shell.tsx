@@ -7,6 +7,9 @@ import { CommandPaletteProvider } from "@/features/search/command-palette";
 import { TaskDialogProvider } from "@/features/tasks/task-dialog";
 import { usePersisted } from "@/lib/storage/persisted-store";
 import { settingsStore } from "@/lib/storage/stores";
+import { AmbientScreen } from "@/components/tv/ambient-screen";
+import { RemoteReceiver } from "@/components/tv/remote-receiver";
+import { TvController } from "@/components/tv/tv-controller";
 import { Atmosphere } from "./atmosphere";
 import { MobileNav, Sidebar } from "./sidebar";
 import { TopBar } from "./topbar";
@@ -31,9 +34,12 @@ export function AppShell({ children }: { children: ReactNode }) {
         <TaskDialogProvider>
           <CommandPaletteProvider>
             <DocumentPreferences />
+            <TvController />
+            <RemoteReceiver />
             <Atmosphere />
             <a
               href="#main"
+              data-spatial-skip
               className="sr-only focus:not-sr-only focus:fixed focus:start-4 focus:top-4 focus:z-[80] focus:rounded-xl focus:bg-emerald focus:px-4 focus:py-2 focus:text-[#06231a]"
             >
               Skip to content
@@ -48,6 +54,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               </div>
             </div>
             <MobileNav />
+            <AmbientScreen />
           </CommandPaletteProvider>
         </TaskDialogProvider>
       </GroceryDialogProvider>

@@ -37,6 +37,10 @@ export const settingsSchema = z.object({
   showSamplePrices: z.boolean(),
   communityStreams: z.boolean(),
   sidebarCollapsed: z.boolean(),
+  /** "auto" switches to the TV (10-foot) layout on Chromecast/Google TV or with ?tv=1. */
+  displayMode: z.enum(["auto", "standard", "tv"]),
+  /** Minutes of inactivity before the ambient screen appears in TV mode (0 = never). */
+  ambientMinutes: z.number().int().min(0).max(120),
 });
 export type Settings = z.infer<typeof settingsSchema>;
 
@@ -66,6 +70,8 @@ const SETTINGS_DEFAULTS: Settings = {
   showSamplePrices: true,
   communityStreams: false,
   sidebarCollapsed: false,
+  displayMode: "auto",
+  ambientMinutes: 5,
 };
 
 export const settingsStore = createPersistedStore<Settings>({
@@ -274,3 +280,23 @@ export function logActivity(type: ActivityType, label: string, href?: string) {
     return [{ id: uid("a"), type, label, href, at: new Date().toISOString() }, ...prev].slice(0, MAX_ACTIVITY);
   });
 }
+
+/* ------------------------------------------------------------------ */
+/* Remote control                                                      */
+/* ------------------------------------------------------------------ */
+
+/** On the TV: the pairing code phones use to control this screen. */
+export const tvRemoteStore = createPersistedStore({
+  key: "tv-remote",
+  version: 1,
+  schema: z.object({ code: z.string().regex(/^[A-Z2-9]{6}$/).nullable() }),
+  defaults: { code: null },
+});
+
+/** On the phone: the TV this remote is paired with. */
+export const phoneRemoteStore = createPersistedStore({
+  key: "phone-remote",
+  version: 1,
+  schema: z.object({ code: z.string().regex(/^[A-Z2-9]{6}$/).nullable() }),
+  defaults: { code: null },
+});

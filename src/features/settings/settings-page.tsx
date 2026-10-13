@@ -10,7 +10,10 @@ import { RECITERS, TRANSLATIONS } from "@/features/quran/editions";
 import { setDailyGoal } from "@/features/quran/quran-state";
 import { COMMON_TIMEZONES, isValidTimeZone } from "@/lib/dates";
 import { useDebounced } from "@/lib/hooks";
-import { allStores, usePersisted } from "@/lib/storage/persisted-store";
+import { allStores, useHydrated, usePersisted } from "@/lib/storage/persisted-store";
+import { setAmbientOpen } from "@/lib/tv/ambient-state";
+import { tvModeReason, useTvMode } from "@/lib/tv/tv-mode";
+import { PairingCard } from "@/components/tv/pairing-card";
 import { quranStore, settingsStore, type Settings as SettingsT } from "@/lib/storage/stores";
 import type { SavedLocation } from "@/types/domain";
 
@@ -32,6 +35,8 @@ export function SettingsPage() {
   const s = usePersisted(settingsStore);
   const quran = usePersisted(quranStore);
   const id = useId();
+  const tv = useTvMode();
+  const reason = useHydrated() ? tvModeReason() : "";
 
   return (
     <div className="mx-auto max-w-3xl space-y-5">
@@ -46,6 +51,52 @@ export function SettingsPage() {
         <Field label="Your name (used in the greeting)" htmlFor={`${id}-name`}>
           <Input id={`${id}-name`} value={s.name} maxLength={40} placeholder="e.g. Ali" onChange={(e) => update({ name: e.target.value })} />
         </Field>
+      </Section>
+
+      <Section
+        id="tv"
+        title="TV & Chromecast"
+        description="TV mode uses a larger 10-foot layout with D-pad navigation for TV remotes, solid panels for Chromecast GPUs, and the ambient screen."
+      >
+        <div className="space-y-1.5">
+          <p className="text-xs font-medium text-ink-2">Display mode</p>
+          <Segmented
+            label="Display mode"
+            value={s.displayMode}
+            onChange={(v) => update({ displayMode: v })}
+            options={[
+              { value: "auto", label: "Auto" },
+              { value: "standard", label: "Standard" },
+              { value: "tv", label: "TV" },
+            ]}
+          />
+          <p className="text-[11px] text-ink-3">
+            Auto turns on TV mode on Chromecast / Google TV browsers or when opened with <code>?tv=1</code>. This screen: {tv ? "TV mode" : "standard mode"} ({reason}).
+          </p>
+        </div>
+        <Field label="Ambient screen after" htmlFor={`${id}-ambient`} hint="Clock, weather, next prayer, verse and headlines. Never covers playing video or recitation.">
+          <Select id={`${id}-ambient`} value={s.ambientMinutes} onChange={(e) => update({ ambientMinutes: Number(e.target.value) })}>
+            <option value={0}>Never</option>
+            {[1, 2, 5, 10, 15, 30, 60].map((m) => (
+              <option key={m} value={m}>
+                {m} minute{m === 1 ? "" : "s"} of inactivity
+              </option>
+            ))}
+          </Select>
+        </Field>
+        {tv && s.ambientMinutes > 0 && (
+          <Button size="sm" variant="secondary" onClick={() => setAmbientOpen(true)}>
+            Show ambient screen now
+          </Button>
+        )}
+        <div id="remote" className="scroll-mt-6 space-y-2">
+          <p className="text-xs font-medium text-ink-2">Phone remote</p>
+          {tv ? (
+            <PairingCard allowReset className="!bg-white/[0.03]" />
+          ) : (
+            <p className="text-xs text-ink-3">The phone remote connects to screens running in TV mode. Switch this screen to TV mode to show its pairing code.</p>
+          )}
+        </div>
       </Section>
 
       <Section id="language" title="Language & region">

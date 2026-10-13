@@ -29,7 +29,7 @@ export function Sidebar() {
     <nav
       aria-label="Primary"
       className={cn(
-        "glass sticky top-4 m-4 me-0 hidden h-[calc(100dvh-2rem)] shrink-0 flex-col p-3 md:flex",
+        "tv-show glass sticky top-4 m-4 me-0 hidden h-[calc(100dvh-2rem)] shrink-0 flex-col p-3 md:flex",
         "w-[76px]",
         !sidebarCollapsed && "lg:w-[232px]",
         "transition-[width] duration-300",
@@ -91,7 +91,7 @@ export function MobileNav() {
   return (
     <nav
       aria-label="Primary"
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[rgba(10,16,28,0.94)] pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden"
+      className="tv-hide fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[rgba(10,16,28,0.94)] pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden"
     >
       <ul className="grid grid-cols-6">
         {NAV_ITEMS.map((item) => {

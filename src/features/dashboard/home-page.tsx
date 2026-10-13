@@ -35,12 +35,15 @@ import { useHydrated, usePersisted } from "@/lib/storage/persisted-store";
 import { activityStore, groceryStore, quranStore, settingsStore, tasksStore, tvStore } from "@/lib/storage/stores";
 import type { ActivityType, NewsResponse } from "@/types/domain";
 import { DailyVerse, PrayerCard, WeatherCard } from "./widgets";
+import { PairingCard } from "@/components/tv/pairing-card";
+import { useTvMode } from "@/lib/tv/tv-mode";
 
 export function HomePage() {
   const t = useT();
   const settings = usePersisted(settingsStore);
   const now = useNow();
   const greeting = now ? t(`greet.${dayPart(settings.timezone, now)}` as const) : " ";
+  const tv = useTvMode();
 
   return (
     <div className="space-y-5">
@@ -72,6 +75,7 @@ export function HomePage() {
         <TadaburProgress />
         <RecentActivity />
       </div>
+      {tv && <PairingCard className="mx-auto max-w-2xl" />}
       <p className="pb-2 text-center text-[11px] text-ink-3">
         Your tasks, lists, bookmarks and notes are stored only in this browser on this device — they don&apos;t sync to family members or other devices.
       </p>
@@ -242,7 +246,7 @@ function ModuleCards() {
             ))}
           </div>
           <Badge tone="emerald" className="shrink-0 whitespace-nowrap text-xs">
-            {hydrated ? `${pending.length} item${pending.length === 1 ? "" : "s"} in list` : "Your list"}
+            {hydrated ? `${pending.length} in list` : "Your list"}
           </Badge>
         </div>
         {hydrated && est.priced > 0 && (

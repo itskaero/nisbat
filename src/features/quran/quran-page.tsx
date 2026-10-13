@@ -34,6 +34,7 @@ import {
 import { useToast } from "@/components/ui/toast";
 import { timeAgo } from "@/lib/dates";
 import { useFetch, useMediaQuery } from "@/lib/hooks";
+import { notifyMediaChange, registerMedia } from "@/lib/tv/media-registry";
 import { useHydrated, usePersisted } from "@/lib/storage/persisted-store";
 import { logActivity, quranStore, settingsStore } from "@/lib/storage/stores";
 import { AudioDock } from "./audio-dock";
@@ -96,6 +97,23 @@ export function QuranPage() {
     ayahs,
     useCallback((i: number) => markRead(surahNumber, [i + 1]), [surahNumber]),
   );
+
+  // Let TV/phone remotes and media keys control recitation.
+  const playerRef = useRef(player);
+  playerRef.current = player;
+  useEffect(
+    () =>
+      registerMedia({
+        id: "quran",
+        label: `Recitation · ${meta.englishName}`,
+        isPlaying: () => playerRef.current.status === "playing" || playerRef.current.status === "loading",
+        toggle: () => playerRef.current.toggle(),
+        next: () => playerRef.current.next(),
+        prev: () => playerRef.current.prev(),
+      }),
+    [meta.englishName],
+  );
+  useEffect(() => notifyMediaChange(), [player.status]);
 
   const [reflectIdx, setReflectIdx] = useState<number | null>(null);
   const [reflectOpen, setReflectOpen] = useState(false);
