@@ -142,6 +142,24 @@ export const azkarSchema = z.object({
   tasbeeh: z.object({ count: z.number().int().min(0), target: z.number().int().min(1).max(10000), total: z.number().int().min(0) }),
 });
 
+export const suneinSchema = z.object({
+  podcasts: z.array(z.object({ feedUrl: z.string().url(), title: z.string().max(200) })).max(60),
+  channels: z.array(z.object({ id: z.string().regex(/^UC[A-Za-z0-9_-]{22}$/), title: z.string().max(200) })).max(60),
+  /** Listening position per episode, so playback resumes on any screen. */
+  progress: z.record(
+    z.string(),
+    z.object({
+      pos: z.number().min(0),
+      dur: z.number().min(0),
+      title: z.string().max(300),
+      show: z.string().max(200),
+      url: z.string().url(),
+      feedUrl: z.string().optional(),
+      at: z.string(),
+    }),
+  ),
+});
+
 /** Store keys synced through the Nisbat server, with their schemas. */
 export const SYNCED_SCHEMAS = {
   tasks: tasksSchema,
@@ -151,5 +169,6 @@ export const SYNCED_SCHEMAS = {
   tv: tvSchema,
   activity: activitySchema,
   azkar: azkarSchema,
+  sunein: suneinSchema,
 } as const;
 export type SyncedKey = keyof typeof SYNCED_SCHEMAS;

@@ -10,6 +10,7 @@ import { settingsStore } from "@/lib/storage/stores";
 import { startSync } from "@/lib/storage/sync";
 import { AmbientScreen } from "@/components/tv/ambient-screen";
 import { PrayerReminder } from "@/features/namaz/prayer-reminder";
+import { ListeningProvider } from "@/features/sunein/listening";
 import { RemoteReceiver } from "@/components/tv/remote-receiver";
 import { TvController } from "@/components/tv/tv-controller";
 import { Atmosphere } from "./atmosphere";
@@ -35,6 +36,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     <ToastProvider>
       <GroceryDialogProvider>
         <TaskDialogProvider>
+          <ListeningProvider>
           <CommandPaletteProvider>
             <DocumentPreferences />
             <TvController />
@@ -60,6 +62,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <AmbientScreen />
             <PrayerReminder />
           </CommandPaletteProvider>
+          </ListeningProvider>
         </TaskDialogProvider>
       </GroceryDialogProvider>
     </ToastProvider>

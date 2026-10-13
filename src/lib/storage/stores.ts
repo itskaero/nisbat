@@ -3,7 +3,8 @@
 import { z } from "zod";
 import { createPersistedStore, uid } from "./persisted-store";
 import type { ActivityEvent, ActivityType } from "@/types/domain";
-import { activitySchema, azkarSchema, groceriesSchema, newsSchema, quranSchema, tasksSchema, tvSchema, type QuranState } from "./schemas";
+import { DEFAULT_PODCASTS } from "@/features/sunein/sources";
+import { activitySchema, azkarSchema, suneinSchema, groceriesSchema, newsSchema, quranSchema, tasksSchema, tvSchema, type QuranState } from "./schemas";
 
 export type { QuranState };
 
@@ -208,4 +209,16 @@ export const azkarStore = createPersistedStore({
   sync: true,
   schema: azkarSchema,
   defaults: { date: "", counts: {}, tasbeeh: { count: 0, target: 33, total: 0 } },
+});
+
+/* ------------------------------------------------------------------ */
+/* Sunein (listening)                                                  */
+/* ------------------------------------------------------------------ */
+
+export const suneinStore = createPersistedStore({
+  key: "sunein",
+  version: 1,
+  sync: true,
+  schema: suneinSchema,
+  defaults: { podcasts: DEFAULT_PODCASTS, channels: [], progress: {} },
 });
