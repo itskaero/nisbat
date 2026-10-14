@@ -1,3 +1,4 @@
+import { allowed } from "@/lib/server/devices";
 import { deletePhoto, readPhoto } from "@/lib/server/photos";
 
 export const dynamic = "force-dynamic";
@@ -12,7 +13,8 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
   });
 }
 
-export async function DELETE(_req: Request, ctx: { params: Promise<{ id: string }> }) {
+export async function DELETE(req: Request, ctx: { params: Promise<{ id: string }> }) {
+  if (!(await allowed(req))) return Response.json({ error: "Not allowed" }, { status: 401 });
   const { id } = await ctx.params;
   return (await deletePhoto(id)) ? Response.json({ ok: true }) : Response.json({ error: "Not found" }, { status: 404 });
 }

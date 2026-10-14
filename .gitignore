@@ -46,3 +46,15 @@ next-env.d.ts
 
 # built TV frontend (apps/tv -> public/screen)
 /public/screen/
+
+# Python caches
+__pycache__/
+*.pyc
+
+# Android app build output and signing key (keep the keystore safe!)
+/apps/mobile/dist/
+/apps/mobile/android/app/build/
+/apps/mobile/android/.gradle/
+/apps/mobile/android/build/
+/apps/mobile/.keystore/
+/apps/mobile/release/

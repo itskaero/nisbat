@@ -1,5 +1,7 @@
 "use client";
 
+import { apiUrl, authHeaders } from "@/lib/api-base";
+
 /** Downscale on the device (max 1920px, JPEG) before uploading — keeps uploads small on home Wi-Fi. */
 export async function prepareImage(file: File, max = 1920): Promise<Blob> {
   if (!file.type.startsWith("image/")) throw new Error(`${file.name} isn't an image`);
@@ -23,7 +25,7 @@ export async function uploadPhotos(files: FileList | File[], onProgress?: (done:
       const blob = await prepareImage(f);
       const form = new FormData();
       form.append("photo", blob, "photo.jpg");
-      const r = await fetch("/api/photos", { method: "POST", body: form });
+      const r = await fetch(apiUrl("/api/photos"), { method: "POST", body: form, headers: authHeaders() });
       if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error ?? "Upload failed");
     } catch (e) {
       errors.push((e as Error).message);

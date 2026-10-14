@@ -20,6 +20,28 @@ A calm, immersive personal and family dashboard for Pakistani households. It bri
 
 Universal search (**Ctrl/⌘ K** or **/**) covers pages, surahs, verse references (e.g. `2:255`), Quran translation text (through the API), saved news, groceries and tasks.
 
+## Three frontends, one server
+
+| Frontend | Where | What it is |
+| --- | --- | --- |
+| Website | `src/` (Next.js) | The full dashboard in any browser, and the server: API, family store, remote relay. |
+| TV app | `apps/tv` → served at `/screen` | Preact app built for the Chromecast's Chrome 90: instant start from a cached snapshot, no reloads between screens, a single gliding focus ring, ambient screen as the idle state. Phones drive it by name. |
+| Android app | `apps/mobile` (Capacitor 8 + React) | Its own phone UI bundled in the APK. Finds the server on the Wi-Fi (`_nisbat._tcp`, announced by the autocast service, with a subnet sweep as fallback), asks once to join, then syncs the same family store. Remote mode, "Show on TV", prayer notifications, offline snapshots. |
+
+**Phones join once.** The app asks; the TV shows *"Allow …?"* (or Settings → Phones on the website, or the household PIN). The phone gets a token (only its hash is stored, in `data/devices.json`); requests from the app's origin need it for family data. Pages served by Nisbat itself (website, TV app) work as before.
+
+### Building the Android app
+
+```bash
+npm run build:mobile && (cd apps/mobile && npx cap sync android)
+docker build -f apps/mobile/Dockerfile.android -t nisbat-android apps/mobile
+docker run --rm -v "$PWD:/work" -v nisbat-gradle:/root/.gradle nisbat-android   # -> apps/mobile/release/
+```
+
+Release builds are signed with `apps/mobile/.keystore/` (git-ignored). **Back it up**: updates only install over the old app when signed with the same key.
+
+`scripts/publish-release.ps1` pushes the branch, creates the GitHub release with `nisbat.apk`, and deploys `site/` (the project page) to GitHub Pages.
+
 ## Chromecast / TV dashboard
 
 Nisbat is designed to replace the stock Chromecast backdrop: it comes up on the TV by itself, and you control it from the TV remote or your phone.

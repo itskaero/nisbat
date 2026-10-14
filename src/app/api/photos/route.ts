@@ -1,3 +1,4 @@
+import { allowed } from "@/lib/server/devices";
 import { MAX_PHOTO_BYTES, listPhotos, savePhoto } from "@/lib/server/photos";
 
 export const dynamic = "force-dynamic";
@@ -9,6 +10,7 @@ export async function GET() {
 
 /** Upload one photo as multipart/form-data field "photo". */
 export async function POST(req: Request) {
+  if (!(await allowed(req))) return Response.json({ error: "This phone isn't trusted yet" }, { status: 401 });
   const len = Number(req.headers.get("content-length") ?? 0);
   if (len > MAX_PHOTO_BYTES + 64 * 1024) return Response.json({ error: "Photo is larger than 10 MB" }, { status: 413 });
   let file: File | null = null;

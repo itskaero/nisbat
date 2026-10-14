@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "build:tv": "vite build --config apps/tv/vite.config.ts",
-    "dev:tv": "vite --config apps/tv/vite.config.ts"
+    "dev:tv": "vite --config apps/tv/vite.config.ts",
+    "build:mobile": "npm run build -w nisbat-mobile"
   },
   "dependencies": {
     "clsx": "^2.1.1",
@@ -44,5 +45,8 @@
     "tailwindcss": "^4",
     "typescript": "^5",
     "vite": "^7.3.7"
-  }
+  },
+  "workspaces": [
+    "apps/mobile"
+  ]
 }

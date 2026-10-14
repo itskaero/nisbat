@@ -5,11 +5,12 @@ import { NextResponse, type NextRequest } from "next/server";
  * so it calls the Nisbat server cross-origin. Allow exactly those origins for
  * the API; everything else stays same-origin only.
  */
-const APP_ORIGINS = new Set(["http://localhost", "https://localhost", "capacitor://localhost"]);
+const APP_ORIGIN = /^(https?|capacitor):\/\/localhost(:\d+)?$/;
 
 export function middleware(req: NextRequest) {
   const origin = req.headers.get("origin");
-  if (!origin || !APP_ORIGINS.has(origin)) return NextResponse.next();
+  // Cross-origin callers still need a trusted-phone token for family data.
+  if (!origin || !APP_ORIGIN.test(origin)) return NextResponse.next();
   const headers = {
     "Access-Control-Allow-Origin": origin,
     "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",

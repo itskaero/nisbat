@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Nisbat talks to the family's own server on the home network over plain
+  http (e.g. http://192.168.1.42:3080). Android can't scope this to private
+  IP ranges, so cleartext is allowed here and the app itself only connects to
+  home-network addresses (see src/lib/conn.ts: isHomeAddress).
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>

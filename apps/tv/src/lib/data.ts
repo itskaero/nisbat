@@ -95,7 +95,7 @@ export function usePbs(city?: string) {
   return useCached<PbsPrices>(`/api/prices?city=${c}`, 6 * 60 * MIN);
 }
 
-export const PRAYERS: PrayerKey[] = ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"];
+export const PRAYERS = ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"] as const satisfies readonly PrayerKey[];
 
 /** The next prayer and minutes until it (wraps to tomorrow's Fajr). */
 export function nextPrayer(p: Prayer | undefined, tz: string, now = new Date()) {

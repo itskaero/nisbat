@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Nisbat mark: emerald tile with a crescent and star (adaptive icon foreground, 108dp canvas). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
+    <path android:fillColor="#45D49A" android:pathData="M36,30h36a6,6 0,0 1,6 6v36a6,6 0,0 1,-6 6h-36a6,6 0,0 1,-6 -6v-36a6,6 0,0 1,6 -6z"/>
+    <path android:fillColor="#0B1220" android:pathData="M58,40a15,15 0,1 0,0 28a12,12 0,1 1,0 -28z"/>
+    <path android:fillColor="#0B1220" android:pathData="M64,47l1.6,3.6l3.9,0.4l-2.9,2.6l0.8,3.9l-3.4,-2l-3.4,2l0.8,-3.9l-2.9,-2.6l3.9,-0.4z"/>
+</vector>
