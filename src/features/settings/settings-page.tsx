@@ -14,6 +14,7 @@ import { allStores, useHydrated, usePersisted } from "@/lib/storage/persisted-st
 import { setAmbientOpen } from "@/lib/tv/ambient-state";
 import { tvModeReason, useTvMode } from "@/lib/tv/tv-mode";
 import { PairingCard } from "@/components/tv/pairing-card";
+import { PhonesSection } from "./phones-section";
 import { PhotoManager } from "@/features/photos/photo-manager";
 import backgroundCredits from "@/data/background-credits.json";
 import { SyncNote } from "@/components/sync-status";
@@ -102,6 +103,8 @@ export function SettingsPage() {
           )}
         </div>
       </Section>
+
+      <PhonesSection />
 
       <Section id="photos" title="Family photo frame" description="Photos shared from any phone or computer appear on the TV's ambient screen, like a digital photo frame.">
         <Switch label="Show photos on the ambient screen" checked={s.ambientPhotos} onChange={(v) => update({ ambientPhotos: v })} />

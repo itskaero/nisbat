@@ -1,6 +1,7 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
+import { apiUrl, authHeaders, streamUrl } from "@/lib/api-base";
 import { allStores, uid, type PersistedStore } from "./persisted-store";
 
 /**
@@ -100,9 +101,9 @@ export function startSync() {
     inflight++;
     setStatus("syncing");
     try {
-      const r = await fetch(`/api/store/${store.key}`, {
+      const r = await fetch(apiUrl(`/api/store/${store.key}`), {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({ data: store.get(), origin: ORIGIN }),
       });
       if (!r.ok) throw new Error(String(r.status));
@@ -121,7 +122,7 @@ export function startSync() {
     const meta = metas.get(store.key)!;
     inflight++;
     try {
-      const r = await fetch(`/api/store/${store.key}`, { cache: "no-store" });
+      const r = await fetch(apiUrl(`/api/store/${store.key}`), { cache: "no-store", headers: authHeaders() });
       if (!r.ok) throw new Error(String(r.status));
       const remote = (await r.json()) as { version: number; data: unknown };
       if (remote.version === 0) {
@@ -171,7 +172,7 @@ export function startSync() {
   }
 
   const pullAll = () => stores.forEach((s) => void pull(s));
-  const es = new EventSource("/api/store/events");
+  const es = new EventSource(streamUrl("/api/store/events"));
   es.addEventListener("open", pullAll);
   es.addEventListener("change", (e) => {
     const change = JSON.parse((e as MessageEvent).data) as { key: string; version: number; origin?: string };

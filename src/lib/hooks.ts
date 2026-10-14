@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { apiUrl, authHeaders } from "@/lib/api-base";
 
 /** Current time, refreshed on an interval. `null` during SSR/hydration. */
 const listeners = new Set<() => void>();
@@ -57,7 +58,7 @@ export function useFetch<T>(url: string | null, deps: unknown[] = []) {
     // Keep previous data while refreshing the same resource.
     setState((s) => ({ data: lastUrl.current === url ? s.data : undefined, loading: true }));
     lastUrl.current = url;
-    fetch(url, { signal: ctrl.signal })
+    fetch(apiUrl(url), { signal: ctrl.signal, headers: authHeaders() })
       .then(async (r) => {
         const body = await r.json().catch(() => ({}));
         if (!r.ok) throw new Error(body?.error ?? `Request failed (${r.status})`);

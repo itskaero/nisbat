@@ -30,9 +30,14 @@ CAST_HOST, NISBAT_URL, CAST_APP_ID, CAST_INTERVAL, CAST_QUIET).
 import argparse
 import datetime as dt
 import logging
+import json
 import os
+import queue
+import socket
 import sys
+import threading
 import time
+import urllib.parse
 import urllib.request
 
 try:
@@ -108,7 +113,74 @@ def dashcast_ready(cast) -> bool:
     return cast.app_id == APP_DASHCAST and DASHCAST_NS in (sc.app_namespaces or []) and sc.destination_id is not None
 
 
-def launch(cast, url: str, app_id: str | None):
+def entry_url(url: str, path: str = "/") -> str:
+    """The TV frontend (/tv/) when the server has it, else the website in TV mode."""
+    base = url.rstrip("/")
+    try:
+        with urllib.request.urlopen(base + "/tv/", timeout=5) as res:
+            if res.status == 200:
+                return f"{base}/tv/#{path}"
+    except Exception:
+        pass
+    return f"{base}{path}{'&' if '?' in path else '?'}tv=1"
+
+
+def listen_for_cast_requests(url: str, requests: "queue.Queue[dict]"):
+    """Follow /api/cast/events ("Show on TV" from the app/website); reconnect forever."""
+    while True:
+        try:
+            with urllib.request.urlopen(url.rstrip("/") + "/api/cast/events", timeout=60) as res:
+                log.info("Listening for 'Show on TV' requests")
+                event = None
+                for raw in res:
+                    line = raw.decode("utf-8", "replace").strip()
+                    if line.startswith("event: "):
+                        event = line[7:]
+                    elif line.startswith("data: ") and event == "cast":
+                        try:
+                            requests.put(json.loads(line[6:]))
+                        except ValueError:
+                            pass
+                    elif not line:
+                        event = None
+        except Exception as e:  # server restarting, network blip, idle timeout
+            log.debug("Cast request feed: %s", e)
+        time.sleep(5)
+
+
+def advertise(url: str):
+    """Announce the server as _nisbat._tcp so the Android app finds it on Wi-Fi."""
+    try:
+        from zeroconf import ServiceInfo, Zeroconf
+    except ImportError:
+        return None
+    u = urllib.parse.urlparse(url)
+    try:
+        ip = socket.gethostbyname(u.hostname or "")
+    except OSError:
+        log.warning("Could not resolve %s for discovery", u.hostname)
+        return None
+    name = os.environ.get("NISBAT_NAME", "Nisbat Home")
+    info = ServiceInfo(
+        "_nisbat._tcp.local.",
+        f"{name}._nisbat._tcp.local.",
+        addresses=[socket.inet_aton(ip)],
+        port=u.port or 80,
+        properties={"path": "/", "v": "2"},
+        server=f"nisbat-{ip.replace('.', '-')}.local.",
+    )
+    zc = Zeroconf()
+    try:
+        zc.register_service(info, allow_name_change=True)
+    except Exception as e:
+        log.warning("Discovery announcement failed: %s", e)
+        zc.close()
+        return None
+    log.info("Announcing %s at %s:%s for the Android app", name, ip, u.port or 80)
+    return zc
+
+
+def launch(cast, url: str, app_id: str | None, path: str = "/"):
     if app_id:
         log.info("Launching Nisbat receiver %s", app_id)
         cast.start_app(app_id, force_launch=True)
@@ -117,7 +189,7 @@ def launch(cast, url: str, app_id: str | None):
         log.info("Nisbat receiver is running")
         return
 
-    target = url.rstrip("/") + "/?tv=1"
+    target = entry_url(url, path)
     dash = DashCastController()
     cast.register_handler(dash)
     if cast.app_id != APP_DASHCAST:
@@ -168,9 +240,20 @@ def main():
         p.error("--url (or NISBAT_URL) is required when --app-id is not given")
     logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO, format="%(asctime)s %(message)s")
 
+    requests: "queue.Queue[dict]" = queue.Queue()
+    zc = None
+    if args.url and not args.once:
+        threading.Thread(target=listen_for_cast_requests, args=(args.url, requests), daemon=True).start()
+        zc = advertise(args.url)
+
+    asked: dict | None = None  # a "Show on TV" request being handled this round
     while True:
         cast, browser = None, None
-        if in_quiet_hours(args.quiet, dt.datetime.now().time()):
+        force = bool(asked and asked.get("force"))
+        path = (asked or {}).get("path") or "/"
+        if asked:
+            log.info("Show on TV requested (%s)%s", path, " - forced" if force else "")
+        if in_quiet_hours(args.quiet, dt.datetime.now().time()) and not asked:
             log.debug("Quiet hours (%s); not launching", args.quiet)
         elif args.url and not server_up(args.url):
             log.warning("Nisbat is not answering at %s; not casting an error page", args.url)
@@ -181,14 +264,16 @@ def main():
         if cast:
             try:
                 st = cast.status
-                action = decide(cast.app_id, st.status_text if st else None, st.is_active_input if st else None, args.take_over_input)
+                action = decide(cast.app_id, st.status_text if st else None, st.is_active_input if st else None, args.take_over_input or force)
+                if force and action == "busy":
+                    action = "launch"
                 if action == "relaunch":
                     log.info("DashCast is open without Nisbat; restarting it")
                     cast.quit_app()
                     wait_until(lambda: cast.app_id != APP_DASHCAST, 15)
                     action = "launch"
                 if action == "launch":
-                    launch(cast, args.url or "", args.app_id)
+                    launch(cast, args.url or "", args.app_id, path)
                 elif action == "ok":
                     log.debug("Nisbat is already on the TV")
                 else:
@@ -200,7 +285,12 @@ def main():
                 browser.stop_discovery()
         if args.once:
             break
-        time.sleep(args.interval)
+        try:
+            asked = requests.get(timeout=args.interval)
+        except queue.Empty:
+            asked = None
+    if zc:
+        zc.close()
 
 
 if __name__ == "__main__":

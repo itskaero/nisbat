@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { allowed } from "@/lib/server/devices";
 import { readKey, writeKey } from "@/lib/server/store";
 import { SYNCED_SCHEMAS, type SyncedKey } from "@/lib/storage/schemas";
 
@@ -11,7 +12,10 @@ function isSynced(key: string): key is SyncedKey {
   return Object.prototype.hasOwnProperty.call(SYNCED_SCHEMAS, key);
 }
 
-export async function GET(_req: Request, ctx: { params: Promise<{ key: string }> }) {
+const denied = () => Response.json({ error: "This phone isn't trusted yet" }, { status: 401 });
+
+export async function GET(req: Request, ctx: { params: Promise<{ key: string }> }) {
+  if (!(await allowed(req))) return denied();
   const { key } = await ctx.params;
   if (!isSynced(key)) return Response.json({ error: "Unknown store" }, { status: 404 });
   const stored = await readKey(key);
@@ -21,6 +25,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ key: string }>
 const body = z.object({ data: z.unknown(), origin: z.string().max(40).optional() });
 
 export async function PUT(req: Request, ctx: { params: Promise<{ key: string }> }) {
+  if (!(await allowed(req))) return denied();
   const { key } = await ctx.params;
   if (!isSynced(key)) return Response.json({ error: "Unknown store" }, { status: 404 });
   const text = await req.text();

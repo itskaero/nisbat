@@ -1,3 +1,4 @@
+import { allowed } from "@/lib/server/devices";
 import { onStoreChange } from "@/lib/server/store";
 
 export const dynamic = "force-dynamic";
@@ -5,6 +6,7 @@ export const runtime = "nodejs";
 
 /** Server-Sent Events: tells every open Nisbat screen when shared data changed. */
 export async function GET(req: Request) {
+  if (!(await allowed(req))) return Response.json({ error: "Not allowed" }, { status: 401 });
   const encoder = new TextEncoder();
   let off = () => {};
   let ping: ReturnType<typeof setInterval>;
