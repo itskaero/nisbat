@@ -2,27 +2,21 @@
 
 import {
   ArrowLeft,
-  BookOpen,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
   ChevronUp,
   Home,
   Link2Off,
-  Newspaper,
   Pause,
   Play,
   Search,
   Send,
   Settings,
-  ShoppingCart,
   SkipBack,
   SkipForward,
-  SquareCheckBig,
-  Tv,
   Wifi,
   WifiOff,
-  type LucideIcon,
 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
@@ -32,9 +26,12 @@ import { Button, IconButton, Input, Segmented, Select, cn } from "@/components/u
 import { useToast } from "@/components/ui/toast";
 import { CHANNELS } from "@/data/channels";
 import quranMeta from "@/data/quran-meta.json";
-import type { REMOTE_PATHS, RemoteCommand, TvState } from "@/lib/remote/protocol";
+import { REMOTE_PATHS, type RemoteCommand, type TvState } from "@/lib/remote/protocol";
+import { NAV_ITEMS } from "@/components/layout/nav";
 import { useHydrated, usePersisted } from "@/lib/storage/persisted-store";
 import { phoneRemoteStore } from "@/lib/storage/stores";
+
+type RemotePath = (typeof REMOTE_PATHS)[number];
 import { GROCERY_UNITS, type GroceryUnit } from "@/types/groceries";
 
 type Send = (cmd: RemoteCommand) => Promise<boolean>;
@@ -216,16 +213,9 @@ function Controller({ code }: { code: string }) {
 
       <Section title="Screens">
         <div className="grid grid-cols-3 gap-2">
-          {(
-            [
-              ["/", "Home", Home],
-              ["/quran", "Quran", BookOpen],
-              ["/news", "News", Newspaper],
-              ["/saman", "Saman", ShoppingCart],
-              ["/tasks", "Tasks", SquareCheckBig],
-              ["/tv", "Live TV", Tv],
-            ] as [(typeof REMOTE_PATHS)[number], string, LucideIcon][]
-          ).map(([path, label, Icon]) => (
+          {NAV_ITEMS.filter((n) => (REMOTE_PATHS as readonly string[]).includes(n.href))
+            .map((n) => [n.href as RemotePath, n.short, n.icon] as const)
+            .map(([path, label, Icon]) => (
             <button
               key={path}
               type="button"

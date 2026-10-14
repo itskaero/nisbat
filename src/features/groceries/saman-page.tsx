@@ -35,10 +35,14 @@ import { GROCERY_CATALOG, GROCERY_CATEGORIES, categoryName } from "@/data/grocer
 import { useHydrated, usePersisted } from "@/lib/storage/persisted-store";
 import { groceryStore, settingsStore } from "@/lib/storage/stores";
 import type { GroceryCategoryId, ShoppingItem } from "@/types/groceries";
+import { PriceChange, ThisWeekPrices } from "@/features/prices/price-ui";
+import { usePbsPrices } from "@/features/prices/use-pbs-prices";
 import {
   clearAll,
   clearPurchased,
   estimate,
+  estimateBreakdown,
+  priceSourceOf,
   formatPKR,
   formatQty,
   lineTotal,
@@ -76,6 +80,8 @@ export function SamanPage() {
         </Button>
       </div>
 
+      <ThisWeekPrices />
+
       <Segmented
         className="lg:hidden"
         label="Saman view"
@@ -103,6 +109,7 @@ function Catalog() {
   const { openAddItem } = useGroceryDialog();
   const settings = usePersisted(settingsStore);
   const items = usePersisted(groceryStore);
+  const pbs = usePbsPrices();
   const [q, setQ] = useState("");
   const [cat, setCat] = useState<CatFilter>("all");
   const [creditsOpen, setCreditsOpen] = useState(false);
@@ -162,11 +169,22 @@ function Catalog() {
         })}
       </div>
 
-      {settings.showSamplePrices && (
-        <p className="mt-3 rounded-xl border border-gold/20 bg-gold/8 px-3 py-2 text-xs text-gold/90">
-          Prices marked <em>est.</em> are rough sample estimates for illustration, not live market rates. You can set your own price when adding.
-        </p>
-      )}
+      <p className="mt-3 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-xs text-ink-2">
+        {pbs.data ? (
+          <>
+            Prices marked <span className="font-semibold text-emerald">PBS</span> are this week&apos;s official average retail prices in {pbs.data.cityName}{" "}
+            (Pakistan Bureau of Statistics). Your local shop may differ.
+          </>
+        ) : (
+          <>Official PBS prices are loading or unavailable.</>
+        )}
+        {settings.showSamplePrices && (
+          <>
+            {" "}Prices marked <em className="text-gold">est.</em> are rough sample estimates, not market rates.
+          </>
+        )}{" "}
+        You can always set your own price when adding.
+      </p>
 
       {products.length === 0 ? (
         <EmptyState
@@ -200,7 +218,9 @@ function Catalog() {
                     </p>
                   )}
                   <p className="mt-auto pt-1 text-xs text-ink-2">
-                    {settings.showSamplePrices && p.sampleUnitPrice != null ? (
+                    {pbs.forProduct(p.id) ? (
+                      <ProductPbsPrice price={pbs.forProduct(p.id)!} unit={p.unit} />
+                    ) : settings.showSamplePrices && p.sampleUnitPrice != null ? (
                       <>
                         {formatPKR(p.sampleUnitPrice)}/{p.unit} <span className="text-gold/80">est.</span>
                       </>
@@ -403,8 +423,8 @@ function ShoppingList() {
             <div>
               <p className="text-xs text-ink-2">Estimated total (to buy)</p>
               <p className="text-[11px] text-ink-3">
-                {est.priced} priced{est.unpriced ? ` · ${est.unpriced} without price (not counted)` : ""}
-                {est.sample ? " · includes sample estimates" : ""}
+                {estimateBreakdown(est.by) || "No prices yet"}
+                {est.unpriced ? ` · ${est.unpriced} without price (not counted)` : ""}
               </p>
             </div>
             <p className="text-xl font-semibold text-ink">{est.priced ? formatPKR(est.total) : "—"}</p>
@@ -483,7 +503,13 @@ function ListRow({
           {total != null ? (
             <>
               {formatPKR(total)}
-              {item.priceIsSample && <span className="text-gold/80"> est.</span>}
+              {priceSourceOf(item) === "sample" && <span className="text-gold/80"> est.</span>}
+              {priceSourceOf(item) === "pbs" && (
+                <span className="text-emerald" title={item.priceNote}>
+                  {" "}
+                  PBS
+                </span>
+              )}
             </>
           ) : (
             "No price"
@@ -514,5 +540,17 @@ function ListRow({
         <Trash2 className="size-3.5" />
       </IconButton>
     </li>
+  );
+}
+
+function ProductPbsPrice({ price, unit }: { price: NonNullable<ReturnType<ReturnType<typeof usePbsPrices>["forProduct"]>>; unit: string }) {
+  return (
+    <span className="flex flex-wrap items-center gap-x-1.5" title={`${price.label}${price.note ? ` · ${price.note}` : ""}`}>
+      <span className="tabular-nums">
+        {price.price < 10 ? `Rs ${price.price.toFixed(2)}` : formatPKR(price.price)}/{unit}
+      </span>
+      <span className="text-[10px] font-semibold text-emerald">PBS</span>
+      <PriceChange change={price.change} className="text-[10px]" />
+    </span>
   );
 }

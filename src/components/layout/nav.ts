@@ -1,4 +1,4 @@
-import { BookOpen, CloudSun, Flag, Headphones, Home, MoonStar, Newspaper, Settings, ShoppingCart, Sparkles, SquareCheckBig, Tv } from "lucide-react";
+import { Banknote, BookOpen, CloudSun, Flag, Headphones, Home, MoonStar, Newspaper, Settings, ShoppingCart, Sparkles, SquareCheckBig, Tv } from "lucide-react";
 import type { TranslationKey } from "@/lib/i18n";
 
 export interface NavItem {
@@ -19,6 +19,7 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/pakistan", key: "nav.pakistan", icon: Flag, short: "Pakistan" },
   { href: "/news", key: "nav.news", icon: Newspaper, short: "News" },
   { href: "/mausam", key: "nav.mausam", icon: CloudSun, short: "Mausam" },
+  { href: "/bazaar", key: "nav.bazaar", icon: Banknote, short: "Bazaar" },
   { href: "/saman", key: "nav.saman", icon: ShoppingCart, short: "Saman", mobile: true },
   { href: "/tasks", key: "nav.tasks", icon: SquareCheckBig, short: "Tasks" },
   { href: "/tv", key: "nav.tv", icon: Tv, short: "Live TV" },

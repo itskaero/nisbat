@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { AqiChip } from "@/features/mausam/aqi-chip";
 import { sherForDate } from "@/features/pakistan/data";
+import type { FxResponse } from "@/lib/server/fx";
 import { describeWeather, dailyVerseRef } from "@/features/dashboard/widgets";
 import { formatHHMM, formatLongDate, nowHHMM, todayKey, zonedParts } from "@/lib/dates";
 import { useFetch, useNow } from "@/lib/hooks";
@@ -82,6 +83,15 @@ function AmbientContent({ onClose }: { onClose: () => void }) {
     `/api/quran/ayah?ref=${dailyVerseRef(date)}&translation=${settings.quranTranslation.startsWith("en.") ? settings.quranTranslation : "en.sahih"}`,
   );
   const news = useFetch<NewsResponse>("/api/news?category=pakistan");
+  const fx = useFetch<FxResponse>("/api/fx");
+  const fxLine = ["USD", "SAR"]
+    .map((c) => {
+      const cur = fx.data?.currencies.find((x) => x.code === c);
+      const v = c === "USD" && fx.data?.usdDaily ? fx.data.usdDaily.value : cur?.reference;
+      return v ? `${c} Rs ${v.toFixed(1)}` : null;
+    })
+    .filter(Boolean)
+    .join(" · ");
 
   // Rotate one headline at a time.
   const [headlineIdx, setHeadlineIdx] = useState(0);
@@ -150,6 +160,7 @@ function AmbientContent({ onClose }: { onClose: () => void }) {
               </div>
             )}
             <AqiChip className="!text-[clamp(0.85rem,1.3vw,1.1rem)]" />
+            {fxLine && <p className="text-[clamp(0.9rem,1.4vw,1.2rem)] tabular-nums text-ink-3">{fxLine}</p>}
             {nextPrayer && (
               <p className="text-[clamp(1rem,1.8vw,1.5rem)] text-ink-2">
                 <span className="text-emerald">{nextPrayer.name}</span> {formatHHMM(nextPrayer.at)} · {nextPrayer.inText}

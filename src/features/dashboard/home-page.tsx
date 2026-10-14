@@ -39,6 +39,7 @@ import { PairingCard } from "@/components/tv/pairing-card";
 import { SyncNote } from "@/components/sync-status";
 import { useTvMode } from "@/lib/tv/tv-mode";
 import { SherCard } from "@/features/pakistan/pakistan-page";
+import { BazaarHome } from "@/features/bazaar/bazaar-home";
 
 export function HomePage() {
   const t = useT();
@@ -72,6 +73,8 @@ export function HomePage() {
       </section>
 
       <ModuleCards />
+
+      <BazaarHome />
 
       <div className="grid grid-cols-[minmax(0,1fr)] gap-5 lg:grid-cols-2 2xl:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,1fr)]">
         <TodayTasks />

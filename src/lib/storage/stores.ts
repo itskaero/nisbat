@@ -38,6 +38,8 @@ export const settingsSchema = z.object({
   quranTranslation: z.string(),
   quranReciter: z.string(),
   showSamplePrices: z.boolean(),
+  /** PBS SPI city for Saman/Bazaar prices: "auto" = nearest to the location, or a city slug / "national". */
+  priceCity: z.string().max(30),
   communityStreams: z.boolean(),
   sidebarCollapsed: z.boolean(),
   /** "auto" switches to the TV (10-foot) layout on Chromecast/Google TV or with ?tv=1. */
@@ -76,6 +78,7 @@ const SETTINGS_DEFAULTS: Settings = {
   quranTranslation: "en.sahih",
   quranReciter: "ar.alafasy",
   showSamplePrices: true,
+  priceCity: "auto",
   communityStreams: false,
   sidebarCollapsed: false,
   displayMode: "auto",

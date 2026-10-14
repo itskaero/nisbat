@@ -1,14 +1,15 @@
 "use client";
 
 import { Info, Minus, Plus } from "lucide-react";
-import { createContext, useCallback, useContext, useId, useMemo, useRef, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
 import { Dialog } from "@/components/ui/dialog";
 import { Button, Field, IconButton, Input, Select, Textarea, cn } from "@/components/ui/primitives";
 import { useToast } from "@/components/ui/toast";
 import { CATALOG_BY_ID, GROCERY_CATALOG, GROCERY_CATEGORIES } from "@/data/grocery-catalog";
 import { usePersisted } from "@/lib/storage/persisted-store";
 import { groceryStore, settingsStore } from "@/lib/storage/stores";
-import { GROCERY_UNITS, type CatalogProduct, type GroceryCategoryId, type GroceryUnit } from "@/types/groceries";
+import { usePbsPrices, type ProductPrice } from "@/features/prices/use-pbs-prices";
+import { GROCERY_UNITS, type CatalogProduct, type GroceryCategoryId, type GroceryUnit, type PriceSource } from "@/types/groceries";
 import { addGroceryItem, findDuplicate, formatPKR, formatQty, mergeGroceryItem, type NewItemInput } from "./actions";
 import { ProductThumb } from "./product-thumb";
 
@@ -48,19 +49,26 @@ interface FormState {
   quantity: string;
   unit: GroceryUnit;
   price: string;
-  priceIsSample: boolean;
+  /** Where a prefilled price came from; null once the family types their own. */
+  priceSource: Exclude<PriceSource, "user"> | null;
+  priceNote?: string;
   notes: string;
 }
 
-function fromProduct(p: CatalogProduct | undefined, showSample: boolean): FormState {
+function prefill(p: CatalogProduct | undefined, showSample: boolean, official: ProductPrice | null): Pick<FormState, "price" | "priceSource" | "priceNote"> {
+  if (official) return { price: String(official.price), priceSource: "pbs", priceNote: official.label };
+  if (showSample && p?.sampleUnitPrice != null) return { price: String(p.sampleUnitPrice), priceSource: "sample" };
+  return { price: "", priceSource: null };
+}
+
+function fromProduct(p: CatalogProduct | undefined, showSample: boolean, official: ProductPrice | null = null): FormState {
   return {
     productId: p?.id,
     name: p?.name ?? "",
     category: p?.category ?? "vegetables",
     quantity: "1",
     unit: p?.unit ?? "kg",
-    price: showSample && p?.sampleUnitPrice != null ? String(p.sampleUnitPrice) : "",
-    priceIsSample: showSample && p?.sampleUnitPrice != null,
+    ...prefill(p, showSample, official),
     notes: "",
   };
 }
@@ -81,10 +89,21 @@ function AddItemDialog({
   const { toast } = useToast();
   const nameRef = useRef<HTMLInputElement>(null);
   const formId = useId();
+  const { data: pbsData, forProduct } = usePbsPrices(undefined, open);
   const [form, setForm] = useState<FormState>(() => {
     const base = fromProduct(CATALOG_BY_ID.get(initialProductId ?? ""), settings.showSamplePrices);
     return initialName && !initialProductId ? { ...base, name: initialName } : base;
   });
+  // PBS prices may arrive after the dialog opens: upgrade an untouched sample/empty prefill.
+  useEffect(() => {
+    if (!pbsData) return;
+    setForm((f) => {
+      const p = CATALOG_BY_ID.get(f.productId ?? "");
+      const official = forProduct(f.productId);
+      if (!p || !official || f.priceSource === "pbs" || (f.priceSource === null && f.price) || f.unit !== p.unit) return f;
+      return { ...f, ...prefill(p, settings.showSamplePrices, official) };
+    });
+  }, [pbsData, forProduct, settings.showSamplePrices]);
   const [errors, setErrors] = useState<Partial<Record<"name" | "quantity" | "price", string>>>({});
   const [dupPrompt, setDupPrompt] = useState<{ existingId: string; input: NewItemInput; addAnother: boolean } | null>(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -98,7 +117,7 @@ function AddItemDialog({
   const set = <K extends keyof FormState>(k: K, v: FormState[K]) => setForm((f) => ({ ...f, [k]: v }));
 
   const pickProduct = (p: CatalogProduct) => {
-    setForm((f) => ({ ...fromProduct(p, settings.showSamplePrices), quantity: f.quantity, notes: f.notes }));
+    setForm((f) => ({ ...fromProduct(p, settings.showSamplePrices, forProduct(p.id)), quantity: f.quantity, notes: f.notes }));
     setShowSuggestions(false);
     setErrors({});
   };
@@ -130,7 +149,9 @@ function AddItemDialog({
       quantity: qty,
       unit: form.unit,
       unitPrice: price,
-      priceIsSample: price != null ? form.priceIsSample : undefined,
+      priceIsSample: price != null ? form.priceSource === "sample" : undefined,
+      priceSource: price != null ? (form.priceSource ?? "user") : undefined,
+      priceNote: price != null && form.priceSource === "pbs" ? form.priceNote : undefined,
       notes: form.notes.trim() || undefined,
     };
   };
@@ -350,7 +371,11 @@ function AddItemDialog({
                 </div>
               </Field>
               <Field label="Unit" htmlFor={`${formId}-unit`}>
-                <Select id={`${formId}-unit`} value={form.unit} onChange={(e) => set("unit", e.target.value as GroceryUnit)}>
+                <Select id={`${formId}-unit`} value={form.unit} onChange={(e) => {
+                    const unit = e.target.value as GroceryUnit;
+                    // A prefilled price is per the catalog unit; drop it if the unit changes.
+                    setForm((f) => (f.priceSource ? { ...f, unit, price: "", priceSource: null, priceNote: undefined } : { ...f, unit }));
+                  }}>
                   {GROCERY_UNITS.map((u) => (
                     <option key={u} value={u}>
                       {u}
@@ -366,9 +391,11 @@ function AddItemDialog({
             htmlFor={`${formId}-price`}
             error={errors.price}
             hint={
-              form.priceIsSample && form.price
-                ? "Pre-filled with a rough sample estimate — not a live market price. Edit to your local price."
-                : "Leave empty if you don't know it; totals only include priced items."
+              form.priceSource === "pbs" && form.price
+                ? `${form.priceNote} (official average retail price). Edit if your shop charges differently.`
+                : form.priceSource === "sample" && form.price
+                  ? "Pre-filled with a rough sample estimate — not a live market price. Edit to your local price."
+                  : "Leave empty if you don't know it; totals only include priced items."
             }
           >
             <div className="relative">
@@ -380,7 +407,7 @@ function AddItemDialog({
                 value={form.price}
                 placeholder="0"
                 aria-invalid={!!errors.price}
-                onChange={(e) => setForm((f) => ({ ...f, price: e.target.value.replace(/[^\d.]/g, ""), priceIsSample: false }))}
+                onChange={(e) => setForm((f) => ({ ...f, price: e.target.value.replace(/[^\d.]/g, ""), priceSource: null, priceNote: undefined }))}
               />
             </div>
           </Field>
@@ -405,7 +432,8 @@ function AddItemDialog({
             <span>Line estimate</span>
             <span className="font-semibold text-ink">
               {lineTotal != null ? formatPKR(lineTotal) : "—"}
-              {lineTotal != null && form.priceIsSample && <span className="ms-1 text-xs font-normal text-gold">sample</span>}
+              {lineTotal != null && form.priceSource === "sample" && <span className="ms-1 text-xs font-normal text-gold">sample</span>}
+              {lineTotal != null && form.priceSource === "pbs" && <span className="ms-1 text-xs font-normal text-emerald">PBS</span>}
             </span>
           </div>
         </form>

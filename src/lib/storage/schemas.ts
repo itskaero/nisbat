@@ -54,6 +54,10 @@ export const shoppingItemSchema = z.object({
   unit: z.enum(GROCERY_UNITS),
   unitPrice: z.number().nonnegative().optional(),
   priceIsSample: z.boolean().optional(),
+  /** Where the unit price came from: PBS weekly SPI, a sample estimate, or the family. */
+  priceSource: z.enum(["pbs", "sample", "user"]).optional(),
+  /** e.g. "PBS avg · Bahawalpur · week ending 8 Oct 2026". */
+  priceNote: z.string().max(160).optional(),
   notes: z.string().max(300).optional(),
   purchased: z.boolean(),
   order: z.number(),

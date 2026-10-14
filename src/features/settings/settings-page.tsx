@@ -17,6 +17,7 @@ import { PairingCard } from "@/components/tv/pairing-card";
 import { PhotoManager } from "@/features/photos/photo-manager";
 import backgroundCredits from "@/data/background-credits.json";
 import { SyncNote } from "@/components/sync-status";
+import { NATIONAL, SPI_CITIES, nearestSpiCity, spiCityName } from "@/data/spi-cities";
 import { quranStore, settingsStore, type Settings as SettingsT } from "@/lib/storage/stores";
 import type { SavedLocation } from "@/types/domain";
 
@@ -254,10 +255,25 @@ export function SettingsPage() {
         </div>
       </Section>
 
-      <Section id="saman" title="Saman">
+      <Section id="saman" title="Saman & Bazaar prices">
+        <Field
+          label="Price city"
+          htmlFor={`${id}-pricecity`}
+          hint="Official weekly retail prices from the Pakistan Bureau of Statistics (SPI) are collected in these 17 cities."
+        >
+          <Select id={`${id}-pricecity`} value={s.priceCity} onChange={(e) => update({ priceCity: e.target.value })}>
+            <option value="auto">Automatic — nearest to {s.location?.name ?? "your location"} ({spiCityName(nearestSpiCity(s.location))})</option>
+            {SPI_CITIES.map((c) => (
+              <option key={c.slug} value={c.slug}>
+                {c.name}
+              </option>
+            ))}
+            <option value={NATIONAL.slug}>{NATIONAL.name}</option>
+          </Select>
+        </Field>
         <Switch
-          label="Show sample price estimates"
-          description="Catalog prices are rough illustrative figures, not live market rates. Turn off to enter only your own prices."
+          label="Show sample prices for items PBS doesn't cover"
+          description="PBS publishes official prices for about 25 of the catalog's staples. For other items, show rough illustrative figures (labelled est.) — turn off to enter only your own prices."
           checked={s.showSamplePrices}
           onChange={(v) => update({ showSamplePrices: v })}
         />

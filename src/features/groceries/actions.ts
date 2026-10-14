@@ -2,7 +2,7 @@
 
 import { uid } from "@/lib/storage/persisted-store";
 import { groceryStore, logActivity } from "@/lib/storage/stores";
-import type { GroceryCategoryId, GroceryUnit, ShoppingItem } from "@/types/groceries";
+import type { GroceryCategoryId, GroceryUnit, PriceSource, ShoppingItem } from "@/types/groceries";
 
 export interface NewItemInput {
   productId?: string;
@@ -12,6 +12,8 @@ export interface NewItemInput {
   unit: GroceryUnit;
   unitPrice?: number;
   priceIsSample?: boolean;
+  priceSource?: PriceSource;
+  priceNote?: string;
   notes?: string;
 }
 
@@ -52,6 +54,8 @@ export function mergeGroceryItem(existingId: string, input: NewItemInput) {
             quantity: Math.round((i.quantity + input.quantity) * 1000) / 1000,
             unitPrice: input.unitPrice ?? i.unitPrice,
             priceIsSample: input.unitPrice != null ? input.priceIsSample : i.priceIsSample,
+            priceSource: input.unitPrice != null ? input.priceSource : i.priceSource,
+            priceNote: input.unitPrice != null ? input.priceNote : i.priceNote,
             notes: [i.notes, input.notes?.trim()].filter(Boolean).join(" · ") || undefined,
             updatedAt: new Date().toISOString(),
           }
@@ -107,18 +111,26 @@ export function lineTotal(item: ShoppingItem): number | undefined {
   return item.unitPrice * item.quantity;
 }
 
+export const priceSourceOf = (i: Pick<ShoppingItem, "priceSource" | "priceIsSample">): PriceSource =>
+  i.priceSource ?? (i.priceIsSample ? "sample" : "user");
+
 export function estimate(items: ShoppingItem[]) {
   let total = 0;
   let priced = 0;
-  let sample = false;
+  const by: Record<PriceSource, number> = { pbs: 0, sample: 0, user: 0 };
   for (const i of items) {
     const t = lineTotal(i);
     if (t == null) continue;
     total += t;
     priced++;
-    if (i.priceIsSample) sample = true;
+    by[priceSourceOf(i)]++;
   }
-  return { total, priced, unpriced: items.length - priced, sample };
+  return { total, priced, unpriced: items.length - priced, sample: by.sample > 0, by };
+}
+
+/** "5 at PBS prices · 2 sample · 1 your own" */
+export function estimateBreakdown(by: Record<PriceSource, number>) {
+  return [by.pbs && `${by.pbs} at PBS prices`, by.sample && `${by.sample} sample`, by.user && `${by.user} your own`].filter(Boolean).join(" · ");
 }
 
 export const formatPKR = (n: number) =>

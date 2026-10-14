@@ -65,6 +65,8 @@ export interface ProductImage {
   sourceUrl: string;
 }
 
+export type PriceSource = "pbs" | "sample" | "user";
+
 export interface ShoppingItem {
   id: string;
   productId?: string;
@@ -75,6 +77,8 @@ export interface ShoppingItem {
   /** User-entered (or sample-prefilled, then confirmed) unit price in PKR. */
   unitPrice?: number;
   priceIsSample?: boolean;
+  priceSource?: PriceSource;
+  priceNote?: string;
   notes?: string;
   purchased: boolean;
   order: number;

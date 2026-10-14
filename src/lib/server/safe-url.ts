@@ -22,8 +22,12 @@ export function publicHttpsUrl(raw: string | null): URL | null {
 }
 
 export async function readCapped(res: Response, maxBytes = 5_000_000): Promise<string> {
+  return new TextDecoder().decode(await readCappedBytes(res, maxBytes));
+}
+
+export async function readCappedBytes(res: Response, maxBytes = 5_000_000): Promise<Buffer> {
   const reader = res.body?.getReader();
-  if (!reader) return "";
+  if (!reader) return Buffer.alloc(0);
   const chunks: Uint8Array[] = [];
   let size = 0;
   for (;;) {
@@ -32,9 +36,9 @@ export async function readCapped(res: Response, maxBytes = 5_000_000): Promise<s
     size += value.byteLength;
     if (size > maxBytes) {
       await reader.cancel();
-      throw new Error("Feed is too large");
+      throw new Error("Response is too large");
     }
     chunks.push(value);
   }
-  return new TextDecoder().decode(Buffer.concat(chunks));
+  return Buffer.concat(chunks);
 }

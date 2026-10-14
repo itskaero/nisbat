@@ -2,7 +2,7 @@ import { z } from "zod";
 import { GROCERY_UNITS } from "@/types/groceries";
 
 /** Screens a remote may open (no arbitrary URLs). */
-export const REMOTE_PATHS = ["/", "/quran", "/namaz", "/azkar", "/sunein", "/pakistan", "/news", "/mausam", "/saman", "/tasks", "/tv", "/settings"] as const;
+export const REMOTE_PATHS = ["/", "/quran", "/namaz", "/azkar", "/sunein", "/pakistan", "/news", "/mausam", "/bazaar", "/saman", "/tasks", "/tv", "/settings"] as const;
 
 export const codeSchema = z.string().regex(/^[A-Z2-9]{6}$/);
 
