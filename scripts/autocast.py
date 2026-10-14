@@ -113,13 +113,17 @@ def dashcast_ready(cast) -> bool:
     return cast.app_id == APP_DASHCAST and DASHCAST_NS in (sc.app_namespaces or []) and sc.destination_id is not None
 
 
-def entry_url(url: str, path: str = "/") -> str:
-    """The TV frontend (/tv/) when the server has it, else the website in TV mode."""
+def entry_url(url: str, path: str = "/", name: str = "") -> str:
+    """The TV app (/screen) when the server has it, else the website in TV mode.
+
+    The Chromecast's name is passed along so phones see e.g. "Dining Room TV".
+    """
     base = url.rstrip("/")
     try:
-        with urllib.request.urlopen(base + "/tv/", timeout=5) as res:
+        with urllib.request.urlopen(base + "/screen", timeout=5) as res:
             if res.status == 200:
-                return f"{base}/tv/#{path}"
+                q = f"?name={urllib.parse.quote(name)}" if name else ""
+                return f"{base}/screen{q}#{path}"
     except Exception:
         pass
     return f"{base}{path}{'&' if '?' in path else '?'}tv=1"
@@ -189,7 +193,7 @@ def launch(cast, url: str, app_id: str | None, path: str = "/"):
         log.info("Nisbat receiver is running")
         return
 
-    target = entry_url(url, path)
+    target = entry_url(url, path, cast.cast_info.friendly_name or "")
     dash = DashCastController()
     cast.register_handler(dash)
     if cast.app_id != APP_DASHCAST:

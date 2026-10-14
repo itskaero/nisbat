@@ -1,0 +1,37 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "es2023"
+    ],
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "jsxImportSource": "preact",
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "types": [
+      "vite/client"
+    ],
+    "paths": {
+      "@/*": [
+        "../../src/*"
+      ],
+      "react": [
+        "../../node_modules/preact/compat"
+      ],
+      "react-dom": [
+        "../../node_modules/preact/compat"
+      ]
+    }
+  },
+  "include": [
+    "src",
+    "vite.config.ts"
+  ]
+}

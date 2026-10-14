@@ -20,7 +20,7 @@ $bundle = Join-Path $env:TEMP "nisbat-deploy.tar.gz"
 
 Write-Host "1/4 Packing source from $root"
 # An explicit list: Windows tar's --exclude=data would also drop src/data.
-$items = @("src", "public", "scripts", "docker", "package.json", "package-lock.json", "next.config.ts", "postcss.config.mjs",
+$items = @("src", "apps", "public", "scripts", "docker", "package.json", "package-lock.json", "next.config.ts", "postcss.config.mjs",
   "tsconfig.json", "eslint.config.mjs", "next-env.d.ts", "Dockerfile", "docker-compose.yml", ".dockerignore", ".env.example", "README.md") |
   Where-Object { Test-Path (Join-Path $root $_) }
 tar -czf $bundle -C $root @items

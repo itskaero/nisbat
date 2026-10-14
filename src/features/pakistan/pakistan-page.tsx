@@ -7,7 +7,9 @@ import { todayKey } from "@/lib/dates";
 import { useFetch, useNow } from "@/lib/hooks";
 import { usePersisted } from "@/lib/storage/persisted-store";
 import { settingsStore } from "@/lib/storage/stores";
-import { NATIONAL_DATES, type NationalDate, rekhtaLink, sherForDate, wikiUrl } from "./data";
+import { type NationalDate, rekhtaLink, sherForDate, upcomingDates, wikiUrl } from "./data";
+
+export { upcomingDates };
 
 interface OnThisDay {
   items: { kind: "event" | "birth" | "death"; year: number; text: string; url?: string }[];
@@ -16,17 +18,6 @@ interface OnThisDay {
 
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 const fmtDay = (n: NationalDate) => `${n.day} ${MONTHS[n.month - 1]}`;
-
-/** National dates ordered from today onwards, each with days remaining. */
-export function upcomingDates(key: string) {
-  const [y, m, d] = key.split("-").map(Number);
-  const today = Date.UTC(y, m - 1, d);
-  return NATIONAL_DATES.map((n) => {
-    let t = Date.UTC(y, n.month - 1, n.day);
-    if (t < today) t = Date.UTC(y + 1, n.month - 1, n.day);
-    return { ...n, inDays: Math.round((t - today) / 86_400_000) };
-  }).sort((a, b) => a.inDays - b.inDays);
-}
 
 function useToday() {
   const { timezone } = usePersisted(settingsStore);

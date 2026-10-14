@@ -8,3 +8,4 @@ nisbat-ccr-*
 .env.*
 !.env.example
 tsconfig.tsbuildinfo
+public/screen

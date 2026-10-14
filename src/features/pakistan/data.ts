@@ -71,3 +71,14 @@ export const NATIONAL_DATES: NationalDate[] = [
 ];
 
 export const wikiUrl = (slug: string) => `https://en.wikipedia.org/wiki/${slug}`;
+
+/** National dates ordered from today onwards, each with days remaining. */
+export function upcomingDates(key: string) {
+  const [y, m, d] = key.split("-").map(Number);
+  const today = Date.UTC(y, m - 1, d);
+  return NATIONAL_DATES.map((n) => {
+    let t = Date.UTC(y, n.month - 1, n.day);
+    if (t < today) t = Date.UTC(y + 1, n.month - 1, n.day);
+    return { ...n, inDays: Math.round((t - today) / 86_400_000) };
+  }).sort((a, b) => a.inDays - b.inDays);
+}

@@ -43,3 +43,6 @@ next-env.d.ts
 
 # family data written by the Nisbat server
 /data
+
+# built TV frontend (apps/tv -> public/screen)
+/public/screen/
