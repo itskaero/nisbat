@@ -1,25 +1,34 @@
-services:
-  db:
-    image: postgres:16-alpine
-    container_name: nisbat-postgres
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: nisbat
-      POSTGRES_PASSWORD: nisbat_dev_password
-      POSTGRES_DB: nisbat
-    ports:
-      # host 5433 -> container 5432, since 5432 is already taken by another
-      # project's Postgres on this machine. Bound to localhost only — the
-      # database itself is never exposed to the LAN, unlike the Next.js app
-      # (see README "Access from a phone").
-      - "127.0.0.1:5433:5432"
-    volumes:
-      - nisbat_pgdata:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U nisbat"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
+# Nisbat Home on a home server / NAS.
+#   cp .env.example .env   # then set CAST_DEVICE, NISBAT_URL, CAST_HOST
+#   docker compose up -d --build
+name: nisbat
 
-volumes:
-  nisbat_pgdata:
+services:
+  nisbat:
+    build: .
+    image: nisbat-home:latest
+    restart: unless-stopped
+    ports:
+      - "${NISBAT_PORT:-3080}:3000"
+    environment:
+      - PAKDATAHUB_API_KEY=${PAKDATAHUB_API_KEY:-}
+      - TZ=${TZ:-Asia/Karachi}
+    volumes:
+      - ./data:/data
+
+  autocast:
+    build:
+      context: .
+      dockerfile: docker/autocast.Dockerfile
+    image: nisbat-autocast:latest
+    restart: unless-stopped
+    network_mode: host
+    depends_on:
+      - nisbat
+    environment:
+      - CAST_DEVICE=${CAST_DEVICE:?set CAST_DEVICE in .env}
+      - CAST_HOST=${CAST_HOST:-}
+      - NISBAT_URL=${NISBAT_URL:?set NISBAT_URL in .env}
+      - CAST_INTERVAL=${CAST_INTERVAL:-60}
+      - CAST_QUIET=${CAST_QUIET:-}
+      - TZ=${TZ:-Asia/Karachi}

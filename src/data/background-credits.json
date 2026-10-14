@@ -1,0 +1,30 @@
+{
+  "dawn": {
+    "title": "Badshahi mosque",
+    "author": "Shaun D Metcalfe",
+    "license": "CC BY 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0/",
+    "sourceUrl": "https://www.flickr.com/photos/40987041@N07/5128377306"
+  },
+  "day": {
+    "title": "Faisal Mosque",
+    "author": "ZHK BlueRose",
+    "license": "Public Domain Mark",
+    "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+    "sourceUrl": "https://www.flickr.com/photos/145382413@N06/35233240851"
+  },
+  "dusk": {
+    "title": "Sunset behind Badshahi Mosque",
+    "author": "Navnetmitt",
+    "license": "CC BY 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0/",
+    "sourceUrl": "https://www.flickr.com/photos/85516028@N00/2662141882"
+  },
+  "night": {
+    "title": "Glorious Past - Royal Mosque",
+    "author": "W Mustafeez",
+    "license": "CC BY 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0/",
+    "sourceUrl": "https://www.flickr.com/photos/21663856@N08/5320178108"
+  }
+}

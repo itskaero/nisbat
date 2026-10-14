@@ -1,100 +1,150 @@
 "use client";
 
-import * as React from "react";
-import { Search, Bell, LogOut } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { useAppStore } from "@/lib/store";
+import { AlarmClock, Bell, CalendarClock, Search, Settings } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
+import { IconButton, cn } from "@/components/ui/primitives";
+import { useCommandPalette } from "@/features/search/command-palette";
+import { isDueToday, isOverdue } from "@/features/tasks/logic";
+import { dayPart, formatHHMM, formatLongDate } from "@/lib/dates";
+import { useNow } from "@/lib/hooks";
+import { useT } from "@/lib/i18n";
+import { usePersisted } from "@/lib/storage/persisted-store";
+import { settingsStore, tasksStore } from "@/lib/storage/stores";
+import { BrandMark } from "./brand";
 
-const ROLE_LABEL: Record<string, string> = {
-  pgr_mo: "PGR/MO",
-  sr_faculty: "SR/Faculty",
-  admin: "Admin",
-};
-
-export function Topbar({ onSearchClick }: { onSearchClick: () => void }) {
-  const currentUser = useAppStore((s) => s.getCurrentUser());
-  const logout = useAppStore((s) => s.logout);
-  const [now, setNow] = React.useState<Date | null>(null);
-
-  React.useEffect(() => {
-    // Reading the system clock is an external-system read, not derived
-    // state — this is the sanctioned effect use case, kept null until
-    // mount so SSR and first client paint agree (no clock to read on the
-    // server) rather than mismatching on a server-rendered time.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setNow(new Date());
-    const t = setInterval(() => setNow(new Date()), 30_000);
-    return () => clearInterval(t);
-  }, []);
-
-  const initials = currentUser.name
-    .split(" ")
-    .map((p) => p[0])
-    .slice(0, 2)
-    .join("");
+export function TopBar() {
+  const t = useT();
+  const settings = usePersisted(settingsStore);
+  const now = useNow();
+  const { open } = useCommandPalette();
+  const greeting = now ? t(`greet.${dayPart(settings.timezone, now)}` as const) : "";
 
   return (
-    <header className="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-border px-4">
+    <header className="sticky top-0 z-30 -mx-4 mb-2 flex items-center gap-3 bg-gradient-to-b from-[#0b1220]/90 via-[#0b1220]/60 to-transparent px-4 pb-3 pt-3 md:static md:mx-0 md:bg-none md:px-0 md:pt-4">
+      <Link href="/" className="flex items-center gap-2 md:hidden" aria-label="Nisbat Home">
+        <BrandMark className="size-8" />
+      </Link>
+
       <button
-        onClick={onSearchClick}
-        className="flex h-9 w-full max-w-sm items-center gap-2 rounded-[var(--radius-md)] border border-border-strong bg-surface px-3 text-[13px] text-foreground-subtle transition-colors hover:border-border-strong hover:bg-surface-hover"
+        type="button"
+        onClick={() => open()}
+        className="glass group flex h-11 min-w-0 flex-1 items-center gap-3 !rounded-2xl px-4 text-start text-sm text-ink-3 transition-colors hover:text-ink-2 md:max-w-md"
+        aria-label="Open search"
+        aria-keyshortcuts="Control+K Meta+K"
       >
-        <Search className="size-4" />
-        <span className="flex-1 text-left">Search patient or MR number…</span>
-        <kbd className="rounded-[var(--radius-sm)] border border-border-strong bg-muted px-1.5 py-0.5 text-[10px] text-foreground-subtle">
-          ⌘K
-        </kbd>
+        <Search className="size-4 shrink-0" aria-hidden />
+        <span className="flex-1 truncate">{t("search.placeholder")}</span>
+        <kbd className="hidden rounded-md border border-white/12 px-1.5 py-0.5 font-sans text-[10px] text-ink-3 sm:inline">Ctrl K</kbd>
       </button>
 
-      <div className="flex items-center gap-3">
-        {now && (
-          <span className="hidden text-[12px] text-foreground-subtle lg:inline">
-            {now.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })},{" "}
-            {now.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
-          </span>
-        )}
-
-        <button className="relative flex size-8 items-center justify-center rounded-[var(--radius-md)] text-foreground-muted hover:bg-surface-hover hover:text-foreground">
-          <Bell className="size-[17px]" />
-          <span className="absolute right-1.5 top-1.5 size-1.5 rounded-full bg-primary" />
-        </button>
-
-        <DropdownMenu>
-          <DropdownMenuTrigger className="flex items-center gap-2 rounded-[var(--radius-md)] px-1.5 py-1 hover:bg-surface-hover">
-            <Avatar className="size-8">
-              <AvatarFallback>{initials}</AvatarFallback>
-            </Avatar>
-            <span className="hidden text-left sm:block">
-              <span className="block text-[13px] font-medium leading-tight text-foreground">
-                {currentUser.name.replace(/^(Dr\.|Prof\.)\s*/, "")}
-              </span>
-              <span className="block text-[11px] leading-tight text-foreground-subtle">
-                {ROLE_LABEL[currentUser.role]}
-              </span>
-            </span>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-64">
-            <DropdownMenuLabel className="normal-case">
-              <span className="block text-[13px] font-medium text-foreground">{currentUser.name}</span>
-              <span className="block text-[11px] font-normal text-foreground-subtle">
-                @{currentUser.username} · {ROLE_LABEL[currentUser.role]}
-              </span>
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => logout()} className="text-danger focus:text-danger">
-              <LogOut className="size-3.5" /> Log out
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+      <div className="ms-auto flex items-center gap-1.5 sm:gap-2">
+        <div className="hidden text-end leading-tight lg:block" aria-live="off">
+          <p className="text-xs text-ink-2" suppressHydrationWarning>
+            {now ? formatLongDate(now, settings.timezone) : " "}
+          </p>
+          <p className="text-sm font-medium text-ink">
+            {greeting}
+            {settings.name ? `, ${settings.name}` : ""}
+          </p>
+        </div>
+        <NotificationsButton />
+        <Link
+          href="/settings"
+          aria-label="Profile and settings"
+          className="grid size-10 place-items-center rounded-full border border-white/15 bg-gradient-to-br from-gold/40 to-emerald/30 text-sm font-semibold text-ink transition-transform hover:scale-105"
+        >
+          {settings.name ? settings.name.trim().charAt(0).toUpperCase() : <Settings className="size-4" aria-hidden />}
+        </Link>
       </div>
     </header>
+  );
+}
+
+function NotificationsButton() {
+  const t = useT();
+  const tasks = usePersisted(tasksStore);
+  const { timezone } = usePersisted(settingsStore);
+  const now = useNow();
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  const overdue = now ? tasks.filter((x) => isOverdue(x, timezone)) : [];
+  const dueToday = now ? tasks.filter((x) => !x.completed && isDueToday(x, timezone) && !isOverdue(x, timezone)) : [];
+  const count = overdue.length + dueToday.length;
+
+  useEffect(() => {
+    if (!open) return;
+    const onDoc = (e: MouseEvent) => !ref.current?.contains(e.target as Node) && setOpen(false);
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    document.addEventListener("mousedown", onDoc);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDoc);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  return (
+    <div className="relative" ref={ref}>
+      <IconButton
+        label={`${t("notifications")}${count ? ` (${count})` : ""}`}
+        aria-expanded={open}
+        aria-haspopup="dialog"
+        onClick={() => setOpen((o) => !o)}
+        className="relative border-white/10 bg-white/5"
+      >
+        <Bell className="size-[18px]" />
+        {count > 0 && (
+          <span className="absolute -end-0.5 -top-0.5 grid min-w-[18px] place-items-center rounded-full bg-coral px-1 text-[10px] font-bold text-white">
+            {count}
+          </span>
+        )}
+      </IconButton>
+      {open && (
+        <div
+          role="dialog"
+          data-popover-open
+          aria-label={t("notifications")}
+          className="glass animate-fade-up absolute end-0 top-12 z-50 w-[min(340px,calc(100vw-2rem))] !bg-[rgba(14,22,35,0.97)] p-2"
+        >
+          <p className="px-3 pb-2 pt-2 text-xs font-semibold uppercase tracking-wider text-ink-3">{t("notifications")}</p>
+          {count === 0 ? (
+            <p className="px-3 pb-3 text-sm text-ink-2">You&apos;re all caught up. Nothing overdue or due today.</p>
+          ) : (
+            <ul className="max-h-80 overflow-y-auto">
+              {[...overdue, ...dueToday].map((task) => {
+                const late = overdue.includes(task);
+                return (
+                  <li key={task.id}>
+                    <Link
+                      href="/tasks"
+                      onClick={() => setOpen(false)}
+                      className="flex items-start gap-3 rounded-xl px-3 py-2.5 hover:bg-white/6"
+                    >
+                      {late ? (
+                        <AlarmClock className="mt-0.5 size-4 shrink-0 text-coral" aria-hidden />
+                      ) : (
+                        <CalendarClock className="mt-0.5 size-4 shrink-0 text-cyan" aria-hidden />
+                      )}
+                      <span className="min-w-0">
+                        <span className="block truncate text-sm text-ink">{task.title}</span>
+                        <span className={cn("text-xs", late ? "text-coral" : "text-ink-3")}>
+                          {late ? "Overdue" : "Due today"}
+                          {task.dueTime ? ` · ${formatHHMM(task.dueTime)}` : ""}
+                        </span>
+                      </span>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+          <p className="border-t border-white/8 px-3 pb-1 pt-2 text-[11px] text-ink-3">
+            In-app reminders only — Nisbat does not send push notifications yet.
+          </p>
+        </div>
+      )}
+    </div>
   );
 }

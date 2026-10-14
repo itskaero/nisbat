@@ -1,385 +1,182 @@
-# Nisbat (نسبت)
+# Nisbat Home
 
-A standalone pediatric discharge workspace: **Patient → Admission → Discharge.**
-It prepares, reviews, and prints a pediatric discharge summary/prescription —
-built to be genuinely usable on a ward, not a demo.
+A calm, immersive personal and family dashboard for Pakistani households. It brings Quran reflection, prayer times, azkar, Urdu listening, Pakistan's history and poetry, daily news, weather and smog, groceries, tasks, family photos and live TV together in one place, on a Chromecast-connected TV and every phone in the house.
 
-See [PRODUCT.md](PRODUCT.md) and [DESIGN.md](DESIGN.md) for the original
-product spec and visual direction this build follows (the development rules —
-clinical safety, workflow, architecture constraints — live in the project's
-internal `CLAUDE.md`, not tracked in this repo).
+| Module | What works |
+| --- | --- |
+| **Home** | Greeting and date in your time zone, daily Quran verse (with source), quick capture for tasks and groceries, live weather (hourly forecast, sunrise and sunset), prayer times with the next prayer highlighted, AQI chip, sher of the day, five module cards, today's plan, Tadabur progress, quick actions and recent activity |
+| **Tadabur Quran** | All 114 surahs and Juz navigation, Uthmani Arabic text, 9 English and Urdu translations, verse-by-verse recitation from 8 reciters (play/pause, seek, previous/next, speed, volume, continuous play, fallback audio), bookmarks, last-read position, verse-level reading progress against a daily goal, "Verse by verse" and "Mushaf page" layouts, and a reflection workspace (create, edit and delete notes) |
+| **Ajj ka Haal (آج کا حال)** | Pakistan-first news from publisher RSS feeds in 9 sections, including Urdu (RTL). Includes a featured story, latest headlines, a reader view with excerpt and publisher link, save for later, share, search, refresh, and a status line for each source |
+| **Saman (سامان)** | A starter catalog of 120+ items of Pakistani groceries with English and Urdu names and category tiles. **Official weekly prices** from the Pakistan Bureau of Statistics for about 25 staples in your city (atta, sugar, daals, oil, ghee, milk, eggs, onions, tomatoes…), with the week, the range and the change since last week. The add-item dialog prefills from the catalog, validates input, handles duplicates (merge or keep separate) and supports adding several items in a row. The shopping list supports purchased state, quantities, grouping and custom order, search and filter, an estimated PKR total that says how many prices are PBS, sample or your own, share, `.txt` export, and clear with confirmation |
+| **Tasks** | Create, edit and delete tasks with due date and time, priority, tag and a reminder note. Includes Today, Upcoming, Completed and All views, search, sorting, overdue indicators, a progress ring, undo, bulk delete with confirmation, and in-app notifications in the header |
+| **Live TV** | Channel directory with search, categories, favourites, recently watched, and previous/next. HLS player (hls.js, or native HLS on Safari) with loading, error and retry states. Also supports adding your own stream and an opt-in community playlist |
+| **Namaz (نماز)** | Today's times with a next-prayer countdown, a monthly timetable (AlAdhan), the Hijri month with major Islamic dates, and an on-screen reminder at each prayer you enable (full-screen in TV mode, optional soft chime synthesised in the browser; no azan recording is shipped) |
+| **Azkar & Hadith** | Morning, evening and other Hisn al-Muslim chapters (Arabic, transliteration, English, recitation audio) with per-dhikr counters, a large tasbeeh counter that the TV remote's OK button or a phone tap advances, and a hadith of the day in English and Urdu with its sunnah.com reference. Counts are shared across the family's screens and reset daily |
+| **Sunein (سنیں)** | An Urdu listening hub: curated Urdu podcasts (add more by iTunes search or by pasting an RSS link), YouTube channels the family follows (latest videos in YouTube's privacy-enhanced player), and Radio Pakistan stations. One player persists across screens with resume per episode, speed, ±15/30 s and media-key/remote control; "Continue listening" is shared across devices |
+| **Pakistan — Tareekh & Kalam** | The national calendar (16 dates, each linked to Wikipedia) with a countdown to the next one, a hero card on the day itself, Wikipedia's "On this day" filtered for Pakistan, and a sher of the day from Allama Iqbal or Mirza Ghalib in large Nastaliq (also on Home and the ambient screen) |
+| **Mausam & Smog** | Current conditions, 24-hour strip, 7-day forecast, sunrise/sunset arc, and US AQI with PM2.5/PM10 and health guidance (Open-Meteo / CAMS model estimates, labelled as such) |
+| **Bazaar (بازار)** | Exchange rates for USD, SAR, AED, GBP, EUR and Gulf currencies with a rupee converter: the State Bank's official rates when a free PakDataHub key is configured, otherwise an open daily reference rate, clearly labelled. Plus all 51 PBS SPI essentials for any of the 17 SPI cities, compared with another city or the national average. A rates-and-prices row on Home and a USD/SAR line on the ambient screen |
+| **Settings** | Name, English or Urdu interface (RTL), time zone, background, text size, reduced motion, city search for weather and prayer times, calculation method and Asr school, prayer reminders, family photos (upload, delete, slideshow), Quran defaults, price city and sample prices, community streams, a live check of each data source, and export, import or reset of local data |
 
-## What it does
+Universal search (**Ctrl/⌘ K** or **/**) covers pages, surahs, verse references (e.g. `2:255`), Quran translation text (through the API), saved news, groceries and tasks.
 
-Nisbat models three things and keeps them distinct on purpose:
+## Chromecast / TV dashboard
 
-- **Patient** — demographics, and a history of admissions/discharges.
-- **Admission** — one hospital stay. Today these are seed/reference data (no
-  "New Admission" button in the UI) — V1 is deliberately not an inpatient EMR;
-  admissions are the integration point a future inpatient feed would populate.
-- **Discharge** — the actual document being prepared, one per admission being
-  discharged. This is where almost all the work happens.
-
-A discharge moves through a fixed workflow, matched to how it actually happens
-on paper:
+Nisbat is designed to replace the stock Chromecast backdrop: it comes up on the TV by itself, and you control it from the TV remote or your phone.
 
 ```
-DRAFT → PENDING SR REVIEW → COMPLETED / SIGNED
-        (returned for correction goes back to DRAFT)
+ ┌──────────── Nisbat server (one Node process, e.g. home PC / Raspberry Pi) ───────────┐
+ │  Next.js app  ·  /api/* data adapters  ·  /api/remote/* relay (SSE)                  │
+ └───────▲──────────────────────────────▲───────────────────────────────▲───────────────┘
+         │ loads /cast (receiver)        │ commands / TV state            │ checks & launches
+   ┌─────┴──────┐                  ┌─────┴──────┐                  ┌──────┴────────┐
+   │ Chromecast │ ◀── D-pad keys ──│ TV remote  │     phone ──▶    │ autocast.py   │
+   │  TV mode   │                  └────────────┘   /remote page   └───────────────┘
+   └────────────┘
 ```
 
-- **PGR/MO** prepares the discharge, then **prints for SR review** — the
-  printed card visibly says **PENDING SR REVIEW** until this happens.
-- **SR/Faculty** reviews the printed card, physically signs it (there is no
-  digital signature in V1 — that's deliberate, not a gap), and can return it
-  for correction.
-- Completion is recorded by an authorized user once the physical process is
-  done. A completed discharge is immutable — editing it creates a new
-  revision and sends it back to SR review, it never silently mutates a signed
-  record.
+**TV mode** turns on automatically for Chromecast and Google TV browsers (the `CrKey`/Google TV user agents), for any URL opened with `?tv=1`, or from Settings → TV & Chromecast. In TV mode Nisbat:
 
-Three roles, enforced both in the UI and server-side (see
-[Authentication](#authentication)): **PGR/MO**, **SR/Faculty**, **Admin**
-(institutional settings + publishing content — see
-[Content Library](#content-library-architecture--how-to-extend-it)).
+* scales the layout for viewing from across the room, with title-safe margins and large focus rings
+* drops live blur, which Chromecast GPUs struggle with
+* moves focus with the D-pad: OK selects and **Back** closes dialogs or goes back. Play/pause and track keys control Quran recitation and Live TV.
+* shows an **ambient screen** after a set period of inactivity (1–60 minutes, or never). It shows a clock, Hijri date, weather, a countdown to the next prayer, the daily verse and rotating Pakistan headlines, with a slow drift to prevent burn-in. It never covers playing video or recitation.
 
-## Quick start
+**Phone remote:** open `http://<nisbat-server>/remote` on a phone on the same network. Then scan the QR code or type the 6-character code shown on the TV (Home in TV mode, Settings → Phone remote, or the bottom of the ambient screen). The remote offers:
+
+* a D-pad (hold to repeat), OK, Back, Home, play/pause and previous/next
+* screen shortcuts
+* "type on TV", which searches or fills the focused field
+* quick add for a task or a Saman item (saved on the TV)
+* Live TV channels and a surah picker
+
+It also shows what the TV is currently displaying.
+
+Commands go through the Nisbat server (`/api/remote/*`, Server-Sent Events), so any phone browser works. The relay is in-memory, so **run Nisbat as a single long-lived Node server** (`npm run build && npm start`) rather than on multi-instance serverless hosting. Anyone on your network who knows the code can control the screen. Use **New code** in Settings to disconnect all paired phones.
+
+### Auto-casting it to the Chromecast
+
+`scripts/autocast.py` runs on any always-on machine on the same network. Every minute it checks the Chromecast. When the Chromecast is idle (backdrop or nothing playing), the script launches Nisbat. It never interrupts YouTube, Netflix or anything else that is casting.
+
+```bash
+pip install pychromecast
+# Quickest: uses the open-source DashCast receiver to show <url>/?tv=1
+python3 scripts/autocast.py --device "Living Room TV" --url http://192.168.1.20:3000
+# Recommended: your own Nisbat receiver (see below)
+python3 scripts/autocast.py --device "Living Room TV" --app-id ABCD1234
+```
+
+To use your own receiver:
+
+1. Serve Nisbat over **HTTPS**. Cast receivers must be HTTPS; a reverse proxy or tunnel with a certificate works.
+2. In the [Google Cast SDK Developer Console](https://cast.google.com/publish) (one-time US$5 registration), add a **Custom Receiver** whose URL is `https://<your-host>/cast`.
+3. While the app is unpublished, register your Chromecast's serial number for testing. Reboot the Chromecast.
+4. Pass the App ID to `autocast.py --app-id`.
+
+The receiver runs Google's Cast Application Framework with the idle timeout turned off, shows Nisbat full screen in TV mode, and accepts `{ "type": "navigate", "path": "/quran" }` messages on `urn:x-cast:pk.nisbat.app`. Opened in an ordinary browser, `/cast` is just a preview.
+
+On a **Chromecast with Google TV** you can also open `http://<nisbat-server>/?tv=1` in a kiosk browser app installed on the TV. Either way, the TV remote's D-pad and the phone remote both work.
+
+## Getting started
 
 ```bash
 npm install
-npm run db:up        # starts local Postgres in Docker (port 5433 — see below)
-npm run db:migrate   # creates the schema
-npm run db:seed      # loads example patients/formulary/content
-```
-
-Add a `SESSION_SECRET` to `.env` (copy `.env.example`, then generate your own —
-`openssl rand -base64 32`; the app won't start without one). Then:
-
-```bash
-npm run dev   # http://localhost:3000, redirects to /login
-```
-
-Sign in with one of the seeded accounts (all share one starter password —
-change it from `/users` as Admin before any real deployment):
-
-| Username | Password | Role |
-|---|---|---|
-| `admin` | `changeme123` | Admin |
-| `faisal.nadeem` | `changeme123` | SR/Faculty |
-| `rehan.malik` | `changeme123` | PGR/MO |
-| `ayesha.khan` | `changeme123` | PGR/MO |
-
-Every time after that, only `npm run db:up` (if the container isn't already
-running — `docker ps` shows `nisbat-postgres`) and `npm run dev` are needed;
-migrations/seed only need re-running when the schema or seed data changes.
-
-```bash
-npm run build      # production build
+npm run dev        # http://localhost:3000
+npm run build && npm start
 npm run lint
-npm run db:studio  # Prisma Studio — browse/edit the database in a GUI
 ```
 
-Requires Docker Desktop running. Postgres listens on `127.0.0.1:5433` (5432
-was already taken by another project on this machine) — see `.env` /
-`docker-compose.yml`.
+You don't need any API keys. See `.env.example`.
 
-**Recurring gotcha for contributors:** after any `prisma/schema.prisma`
-change, `npx prisma generate` alone isn't enough — a running `next dev`
-process caches the old Prisma client, so kill the whole node process tree
-(`npm run dev`, `next dev`, and any Turbopack worker) and restart it, or
-you'll see `Unknown argument` errors on fields that genuinely exist.
+## Stack and structure
 
-### Access from a phone
+The app uses Next.js 15 (App Router), React 19, TypeScript, Tailwind CSS v4, lucide-react, hls.js, zod and fast-xml-parser.
 
-`next dev`/`next start` bind `0.0.0.0` (see `package.json`'s `--hostname
-0.0.0.0`), so the app is reachable from any device on the same network:
+```
+src/
+  app/                     routes (/, /quran, /namaz, /azkar, /sunein, /pakistan, /news, /mausam, /saman, /tasks, /tv, /remote, /cast, /settings) + api/
+  components/layout/       app shell, sidebar/mobile nav, top bar, atmospheric backdrop
+  components/ui/           buttons, inputs, dialog (native <dialog>), toasts, chips, tabs, empty states…
+  features/<module>/       domain UI + logic: dashboard, quran, news, groceries, tasks, live-tv, search, settings
+  lib/storage/             versioned, zod-validated stores (localStorage + server sync)
+  lib/server/              JSON file store, photo storage, URL safety checks
+  lib/api/http.ts          server fetch helper (timeouts, revalidation)
+  lib/dates, lib/i18n.ts   time-zone helpers, English/Urdu strings
+  data/                    grocery catalog, Quran metadata, TV channel directory, image credits
+scripts/                   grocery image pipeline (Openverse → reviewed → public/groceries)
+```
 
-1. Find the PC's LAN IP: `ipconfig` (Windows) → the `IPv4 Address`.
-2. On the phone (same Wi-Fi), open `http://<that-ip>:3000`.
-3. If it doesn't connect, allow it through Windows Firewall once:
-   ```powershell
-   New-NetFirewallRule -DisplayName "Nisbat dev" -Direction Inbound -LocalPort 3000 -Protocol TCP -Action Allow
-   ```
+### Data and persistence (family sync)
 
-The database itself is **not** exposed to the network (`127.0.0.1:5433`) —
-only the app is reachable from other devices. Login is real (bcrypt-hashed
-password, an HMAC-signed session cookie) but this is still plain HTTP with no
-TLS, so treat LAN reachability as trusted-network-only.
+Tasks, the Saman list, Quran bookmarks, progress and reflections, saved news, TV favourites, recent activity, azkar counts and Sunein subscriptions/progress are **shared by every screen that uses the same Nisbat server**: the TV, phones and laptops all see one list. Settings stay per device.
 
-### Moving to the cloud later
+* The server keeps one JSON file per store in `NISBAT_DATA_DIR` (default `./data`, git-ignored), written atomically with a version counter. Family photos live in `<data dir>/photos`.
+* `GET/PUT /api/store/<key>` validate against the same zod schemas the client uses; `/api/store/events` (Server-Sent Events) tells other screens to refresh.
+* Each browser keeps a localStorage copy, so the app works offline; changes made offline are pushed when the server is reachable again. The first time a device joins, its local items are merged with the server's (by id). After that, the last write wins per store.
+* There are no accounts: anyone who can reach the server can read and change the shared data. Keep it on your home network (or behind your own VPN/tunnel with authentication).
 
-Point `DATABASE_URL` at a managed Postgres (Supabase, Neon, RDS, …) and run
-`prisma migrate deploy` against it — `prisma/schema.prisma` has no
-local-only assumptions.
+**Settings → Your data** can still export and import a JSON backup.
 
-## How to make a discharge
+Each store is versioned (`{ v, data }`) and validated with zod when it's read. If a value is malformed it falls back to defaults, and the bad payload is kept under `<key>:corrupt`. Feature code only talks to `createPersistedStore`, so moving to a real database later means replacing that layer, not the features.
 
-There's no "New Discharge" page in isolation — a discharge always starts from
-an existing admission:
+## Data sources and policies
 
-1. **Find the patient.** Use Search (the entry point), the Dashboard's
-   "Current Admissions," or the Admissions page. Every one of these lists
-   active admissions with a **Start Discharge** button.
-2. Clicking it creates a fresh `DRAFT` discharge (`createDischarge` in
-   `src/lib/store.ts`) pre-populated with the admission's real weight/age —
-   nothing clinical is invented, only factual data with a trusted source
-   auto-populates.
-3. **Work through the workspace** (`/discharges/[id]/...`) — a grouped
-   sidebar, one route per section, a sticky patient banner throughout:
+| Data | Source | Notes |
+| --- | --- | --- |
+| Quran text | [Tanzil](https://tanzil.net) Uthmani via [AlQuran Cloud](https://alquran.cloud/api) | Shown verbatim with attribution. The bismillah is displayed as a header, not as part of verse 1, except in Al-Fatiha and At-Tawbah. No tafsir is added. |
+| Translations and audio | AlQuran Cloud / Islamic Network CDN | Only allow-listed editions are proxied. |
+| News | Public RSS from [Sixty](https://sixty.pk/rss.xml) (EN and [UR](https://sixty.pk/ur/rss.xml)), Dawn, The Express Tribune, Al Jazeera, BBC Urdu | Stores only the headline, an excerpt of 48 words or fewer, the image URL, the time and the link. Full articles stay on the publisher's site. Sponsored items and stories older than 10 days are dropped. Items with no timestamp are labelled, not given an invented one. |
+| Weather and geocoding | [Open-Meteo](https://open-meteo.com) (CC BY 4.0) | The provider and observation time are shown. |
+| Prayer times | [AlAdhan](https://aladhan.com/prayer-times-api) | The method and Asr school are shown and configurable. |
+| Grocery photos | [Openverse](https://openverse.org): CC BY, CC BY-SA, CC0 | Each photo was reviewed by hand. Credits appear in the app (Saman → "view image credits") and in `src/data/grocery-images.json`. |
+| Prayer timetable and Hijri dates | AlAdhan `calendar` | Islamic dates shown are a short curated list; the moon-sighting date in Pakistan can differ by a day, which the page notes. |
+| Air quality | [Open-Meteo Air Quality](https://open-meteo.com/en/docs/air-quality-api) (CAMS, CC BY 4.0) | Model estimate, not station readings; labelled. |
+| Adhkar | [hisnmuslim.com](https://www.hisnmuslim.com) API (Hisn al-Muslim) | Arabic, English and audio, attributed on the page. |
+| Hadith of the day | [fawazahmed0/hadith-api](https://github.com/fawazahmed0/hadith-api) (Unlicense) via jsDelivr | A curated list of Sahih al-Bukhari numbers; each links to sunnah.com. |
+| Podcasts | Publisher RSS feeds; discovery via the iTunes Search API | Audio streams from the publisher. Nothing is downloaded or rehosted. Feed URLs must be public HTTPS (no IP addresses or local hosts) and are capped at 5 MB. |
+| YouTube | Channel RSS (`youtube.com/feeds/videos.xml`) + `youtube-nocookie.com` embed | Official player only; no downloading or ad removal. |
+| Radio | Radio Pakistan's own streams (`radio.gov.pk`) | Broadcaster provenance. |
+| On this day | [Wikipedia REST API](https://en.wikipedia.org/api/rest_v1/) (CC BY-SA 4.0) | Filtered to Pakistan-related entries, attributed and linked. |
+| Poetry | Allama Iqbal (d. 1938) and Mirza Ghalib (d. 1869), public domain | 16 couplets, each checked against [Rekhta](https://www.rekhta.org) and linked there. |
+| Backgrounds | Flickr via Openverse (CC BY 2.0 / Public Domain Mark) | Four photos (dawn, day, dusk, night), reviewed by hand. Credits: Settings → Background and `src/data/background-credits.json`; regenerate with `scripts/fetch-backgrounds.py`. |
+| Grocery and essentials prices | [PBS weekly Sensitive Price Indicator](https://www.pbs.gov.pk/price-statistics/) (official, free) | Nisbat reads the weekly `Annex_DD.MM.YYYY.xlsx` (sheet Appendix-A: 51 items × 17 cities, lowest/average/highest retail price) exactly as published, found via pbs.gov.pk's own WordPress API. Parsed weeks are kept in `<data dir>/spi` (last 8), so prices still show if PBS is down. Only catalog items with a true SPI counterpart get a PBS price (see `src/data/spi-map.ts`); the rest keep a labelled **sample estimate** (optional) or the family's own price. These are city averages; shops vary. |
+| Exchange rates (official) | State Bank of Pakistan via [PakDataHub](https://pakdatahub.com) | Optional: set `PAKDATAHUB_API_KEY` on the server. The free plan (500 calls a month) is enough; Nisbat uses about 100 a month (daily SBP M2M dollar rate, monthly SBP averages), caches them in `<data dir>/fx-official.json`, and pauses on quota or key errors. PakDataHub's terms allow use in your own dashboards on every plan; showing the data to other people's customers needs their Business plan. |
+| Exchange rates (reference) | [fawazahmed0/exchange-api](https://github.com/fawazahmed0/exchange-api) (CC0) | Daily mid-market rates, always labelled as **not** the SBP rate. Banks and exchange companies quote their own. |
 
-   | Group | Sections |
-   |---|---|
-   | Patient | Overview |
-   | Clinical | Diagnosis*, Presenting Complaints*, History, Examination* |
-   | Hospital Course | Investigations, Treatment, Clinical Course* |
-   | Discharge | Medications*, Reconciliation*, Advice, Follow-up, Growth, Pending Tests, Immunization |
-   | Review | Summary & Preview |
+The "Islamic & Community" news section is not offered yet, because no suitable publisher feed has been verified. Add one in `src/features/news/sources.ts` to enable it.
 
-   (`*` = required before printing for review — see the sidebar's own
-   completion dots, and `src/lib/workspace-nav.ts`'s `WORKSPACE_SECTIONS` for
-   the exact list and what "complete" means per section.) Autosave is
-   continuous — `updateContent` debounces 800ms per discharge, everything
-   else (adding a medication, applying an advice pack) syncs immediately.
-4. Medications: pick a **drug**, then its **exact formulation/strength**
-   (never assumed) — only then does a dose calculate, with the full trace
-   shown (weight → rule → calculated amount → formulation → volume → final
-   dose). Manual override is allowed but flags a warning past a 20%
-   discrepancy from the calculated dose.
-5. Treatment → Reconciliation: an inpatient drug-linked treatment event
-   (antibiotics/steroids/anticonvulsants) auto-carries into Reconciliation as
-   an item awaiting an explicit decision (Continue/Stop/Change/New) — an
-   inpatient medication never becomes a discharge prescription on its own.
-6. Advice/Follow-up: apply a published Advice Pack or Follow-up Module —
-   every suggestion starts **unselected** until you confirm it
-   (`advice-bullet-picker.tsx`); nothing is silently included.
-7. **Summary & Preview** — the actual print layout (A4/Legal, exact — this is
-   the same component print itself uses, so preview never lies about what
-   prints), a checklist of anything still missing, and language controls
-   (Urdu only / Urdu + English / English only, overridable per-Medications
-   and per-Advice-Pack). Printing here moves the discharge to **PENDING SR
-   REVIEW** — the printed card visibly says so until an SR completes it.
-8. SR/Faculty reviews the physical printout, signs it, and either returns it
-   for correction (back to DRAFT — editing bumps the revision) or an
-   authorized user records completion. A completed discharge's content is
-   frozen; nothing about it is editable in place again.
+### Live TV policy and adding a channel
 
-Patient history (previous admissions/discharges) is always one click away
-from a patient's own page — past discharges show their preserved content
-snapshot exactly as it was at completion, never recomputed against today's
-content/dose-rule versions.
+Channels live in `src/data/channels.ts`, separate from the player.
 
-## Content Library architecture — how to extend it
+* **Official** streams are HTTPS HLS links on the broadcaster's own domain. They were checked on the date stored with each channel and need no login, token, DRM or geo-unlock.
+* For channels without a verified public stream, Nisbat shows a link to the broadcaster's website instead of the player.
+* **Community streams** come from iptv-org, are off by default, and are clearly labelled as unverified. HTTPS-only links without tokens or referrer requirements are used. Sports channels are excluded.
+* Users can add their own stream URL. Only direct `.m3u8`, `.mp4` and `.webm` addresses are accepted, never web pages.
 
-`/advice-packs` (labeled **Content Library** in the sidebar — the URL predates
-the other content types joining it) is one tabbed page for every piece of
-**governed clinical content**: content that isn't written fresh per-discharge,
-but authored once, reviewed, and reused. Six types exist today:
+To add a channel, confirm the broadcaster (or its official distribution partner) publishes the stream, that it is HTTPS, that it plays in a browser without authentication, and that its terms allow playback. Then add it with `provenance: "broadcaster"` and `verifiedOn`.
 
-| Type | What it is | Editor |
-|---|---|---|
-| Advice Pack | Family education / danger signs / home care, grouped into sections of bilingual bullets | Dedicated full-page builder (`/advice-packs/new`, `/advice-packs/[id]/edit`) |
-| Follow-up Module | A clinical follow-up visit template (service, timing, purpose, instructions) | Modal — intentionally simpler than Advice Packs |
-| Investigation Panel | A named group of tests (e.g. "CBC" → Hemoglobin/TLC/Platelets/DLC/ESR) that bulk-inserts result rows | Modal |
-| Dose Rule | A drug's per-kg/fixed dosing formula, with an explainable calculation trace | Modal, with a live preview at sample weights |
-| Frequency Phrase | The parent-facing wording for a dosing frequency code (BD → "Twice daily" / "صبح و شام…") | Modal |
-| Vocabulary List | A whole rapid-fill chip list (exam/history/presenting-complaint chips) or the diagnosis catalogue | Modal |
+Channel tiles are original monograms; broadcaster logos are not redistributed.
 
-All six share **one governance model**, enforced both in the UI and
-server-side:
+### Grocery images
 
-- **Faculty/SR create and edit.** **Admin publishes.** A `PATCH` that sets
-  `status: "published"` always requires Admin regardless of the route's other
-  role rules (`src/lib/api/crud.ts`).
-- **Only published content is available for routine clinical selection** —
-  drafts exist for review/iteration but never show up as a rapid-fill option
-  on a discharge.
-- **Editing an already-published item creates a new draft version** rather
-  than mutating the live one in place (`version + 1`, `status: "draft"`,
-  `publishedBy` cleared) — publishing that draft is a separate, explicit step.
-- **A discharge keeps a snapshot**, never a live reference — applying an
-  Advice Pack, Follow-up Module, or Dose Rule's calculation copies the
-  content as it existed at that moment onto the discharge. Later edits to the
-  library, even publishing a new version, never rewrite an already-applied
-  discharge.
-- **System-sourced Dose Rules are permanently locked** (never editable, not
-  hidden — enforced server-side too); only Faculty-authored rules can be
-  edited, and a rule change never touches a prescription already written
-  against it.
-- **Frequency Phrases** are the one type where more than one row can exist
-  per code (multiple phrasings to compare/iterate on) — the store enforces
-  exactly one *published* phrase per code at a time, so publishing a new one
-  automatically retires whichever was live (`publishFrequencyPhrase` in
-  `src/lib/store.ts`). What a code actually *means* for dose timing
-  (`timesPerDay`/`intervalHours` in `src/lib/frequency.ts`'s
-  `FREQUENCY_OPTIONS`) is fixed in code, not authorable content — adding a
-  genuinely new frequency code is a code change, not a Content Library edit.
-- **Vocabulary Lists** are edited a whole list at a time (all its
-  systems/categories together), matching the grain an Advice Pack's several
-  sections are edited/published together — not one row per chip.
+```bash
+python3 -I scripts/fetch-grocery-images.py candidates /tmp/gimg   # downloads 3 candidates per product + contact sheets
+# review sheets, write /tmp/gimg/choices.json  {"tomato": 0, ...}
+python3 -I scripts/fetch-grocery-images.py apply /tmp/gimg        # writes public/groceries + credits JSON
+```
 
-### How to add a new governed content type
+## Known limitations
 
-This is the same six-layer recipe every existing type follows (most recently
-Frequency Phrases and Vocabulary Lists) — copy the shape of whichever
-existing type is closest to what you're adding:
+* Some sources could not be fully verified from the development sandbox: Radio Pakistan streams use non-443 ports that the sandbox blocks, YouTube channel feeds intermittently returned errors, and Wikipedia rate-limited some requests (some national-calendar article links were not checked). The app shows a clear error with Retry whenever a source fails.
+* Family sync and the phone remote need **one long-lived Node server**; they will not work on multi-instance serverless hosting.
+* PBS prices are weekly city averages (published on Fridays for the week ending Thursday); individual shops differ. If PBS changes the spreadsheet layout, the parser refuses it and the last good week keeps showing.
+* Official SBP exchange rates could not be tested with a real key from the development sandbox (an invalid key is handled and falls back to the reference rate).
+* Prayer reminders appear only while Nisbat is open on a screen (there are no push notifications).
 
-1. **`prisma/schema.prisma`** — add the model (id, the content fields,
-   `version`/`status`/`createdBy`/`publishedBy`/`updatedAt` for governance).
-   Run `prisma migrate dev`, then **`prisma generate` and a full dev-server
-   restart** (see the gotcha above — this bites every time).
-2. **`src/types/content.ts`** — the TypeScript type, matching the Prisma
-   model field-for-field.
-3. **`src/app/api/<type>/route.ts` + `[id]/route.ts`** — almost always a
-   one-line pair using the generic factory:
-   ```ts
-   export const { GET, POST } = createHandler(prisma.yourModel, {
-     authRoles: ["sr_faculty", "admin"],
-   });
-   ```
-   (`src/lib/api/crud.ts` already handles the publish-requires-admin rule.)
-4. **`src/app/api/bootstrap/route.ts`** — add it to the `Promise.all` fetch
-   list and the response shape, so it loads with everything else on app
-   start.
-5. **`src/lib/store.ts`** — a state array plus `create`/`update`/`publish`/
-   `unpublish` actions, each a small structural copy of an existing type's
-   block. Also add it to `src/lib/api-client.ts`'s `BootstrapData` and
-   create/sync functions.
-6. **A form dialog** (`src/components/content/<type>-form-dialog.tsx`) and a
-   new tab + card grid on the Content Library page
-   (`src/app/(app)/advice-packs/page.tsx`).
-
-   **The one real gotcha here:** these dialogs are rendered once as a
-   persistent instance the page just toggles open/closed for whichever row
-   was clicked — they are *not* remounted per row automatically. If the
-   dialog initializes its fields with `useState(existing?.field ?? default)`
-   (the pattern every one of these dialogs uses), that initializer only ever
-   runs once. **Give the dialog a `key` at its usage site**
-   (`key={existing?.id ?? "new"}`, prefixed if more than one such dialog is a
-   JSX sibling on the same page — key uniqueness is checked across siblings
-   regardless of type) so React actually remounts it per row. Skipping this
-   was a real, shipped bug: editing one row and then a different one silently
-   showed the first row's stale data. A `useEffect` that resets state on
-   `open`/`existing` changes looks like an alternative fix — this project's
-   lint config (and React's own current guidance) flags that as an
-   anti-pattern; use the `key`, not an effect.
-7. Seed a starting set in `src/lib/seed-data.ts` and wire it into
-   `prisma/seed.ts`'s upsert loop.
-
-### A general robustness note for anyone extending clinical content shapes
-
-Discharge content is stored as `jsonb` (see [Where things
-live](#where-things-live)) — a discharge written under an older shape (before
-a field existed) is real, persisted data that no migration ever rewrites.
-Code that reads deep into `DischargeContent` defensively (`field ?? {}`
-before `Object.values`/`.map`, etc.) rather than assuming today's shape is
-what's actually there — `src/lib/workspace-nav.ts`'s `safeIsComplete` wraps
-every section-completion check in a try/catch for exactly this reason: one
-section's shape gap should make that section read as "incomplete," never
-crash the whole workspace sidebar for that discharge.
-
-## Where things live
-
-- `src/types/` — the domain model (Patient, Admission, Discharge, medication
-  entities, content entities, audit/settings). Read this first —
-  `prisma/schema.prisma` mirrors it field-for-field.
-- `prisma/schema.prisma` — the database schema. Workflow/status fields are
-  relational; deeply nested or evolving clinical content (`DischargeContent`,
-  the audit trail, applied advice sections) is `jsonb`, so the API layer
-  stays a thin pass-through instead of a second schema to keep in sync.
-- `prisma/seed.ts` — loads `src/lib/seed-data.ts`'s example data into
-  Postgres.
-- `src/app/api/` — route handlers (`src/lib/api/crud.ts` is the generic
-  factory most of them delegate to).
-- `src/lib/store.ts` — the Zustand store: owns all business logic (status
-  transitions, audit trail, revision snapshots, content governance); every
-  mutating action also pushes the result to the server via
-  `src/lib/api-client.ts`. `updateContent` (the highest-frequency mutation)
-  is synced on an 800ms debounce per discharge; everything else syncs
-  immediately. `hydrate()` fetches everything from `/api/bootstrap` once on
-  app start (`src/components/layout/store-hydrator.tsx`).
-- `src/lib/dose-calc.ts` — the explainable dose-calculation trace (weight →
-  rule → calculated amount → formulation → volume → final dose), including a
-  `topical_instruction` basis for topicals/eye drops that skip the mg/volume
-  math entirely.
-- `src/lib/growth-calc.ts` / `src/lib/who-growth-data.ts` — WHO Child Growth
-  Standards (2006) Z-scores from real LMS parameter tables sourced from
-  who.int.
-- `src/lib/frequency.ts` / `src/lib/clinical-vocab.ts` — resolve a published
-  Frequency Phrase / Vocabulary List first, falling back to a hardcoded
-  default only if nothing's published yet.
-- `src/components/discharge/discharge-document.tsx` — the single source of
-  truth for the clinical/parent-facing document, used by both the
-  workspace's inline Preview toggle and the standalone print route, so
-  preview and print never diverge.
-- `src/app/(app)/` — the global shell (Dashboard, Search, Admissions,
-  Settings, Content Library).
-- `src/app/discharges/[dischargeId]/(workspace)/` — the discharge editor.
-- `src/app/discharges/[dischargeId]/print/` — the true print preview
-  (A4/Legal, outside the workspace chrome).
-
-## Authentication
-
-Username/password (`bcryptjs` hashes — pure JS, nothing to native-compile on
-Windows), a hand-rolled HMAC-SHA256-signed session cookie
-(`src/lib/auth/session.ts`) rather than a framework built around external
-providers: three fixed roles, no OAuth/self-signup. The cookie payload only
-ever carries `userId` + an expiry — nothing sensitive, so a signature
-(tamper-proofing) is enough.
-
-Role and `active` status are **never** trusted from the cookie — every
-request re-checks Postgres (`src/lib/auth/dal.ts`), so deactivating a user
-(`/users`, Admin-only, no hard delete) takes effect on their very next
-request, not at next login. `src/proxy.ts` (Next.js 16 renamed
-`middleware.js` to `proxy.js`) does a cheap optimistic redirect based on the
-cookie's signature alone; the real DB-backed check happens again in every
-route/page that needs the user. Its matcher excludes static files by
-extension (not just `_next/static`), so a `public/` asset like the app logo
-loads even for an unauthenticated visitor on `/login`.
-
-## Design system
-
-A dark, atmospheric shell — deep charcoal background, layered surfaces
-(never "card soup"), a luminous accent color, thin borders, restrained
-rounded surfaces (an 8–16px radius scale, `--radius-sm/md/lg/full` in
-`globals.css`) — matched to the actual product logo (an emerald/teal
-Rx-and-ribbon mark): primary actions and active/selected states use an
-emerald green (`#059669`/`#10b981`), a dark teal (`#115e59`, with a brighter
-`#06b6d4` step for legible text) is the secondary accent, and a warm gold
-stays as the sparing "guide attention" accent. Chips deliberately are **not**
-pill-shaped — DESIGN.md is explicit that they read as "compact clinical
-controls," not colorful consumer-app pills. The login screen carries a slow,
-subtle animated gradient-wave background (pure CSS, no library, frozen under
-`prefers-reduced-motion`) — the one surface with no clinical data, so the one
-place a bit of expressive motion doesn't compete with charting.
-
-## What's here vs. what's next
-
-Built: the full discharge workflow end-to-end (draft → SR review →
-completed, with revisioning and server-side status-transition validation),
-every clinical/discharge section from PRODUCT.md, dose calculation with
-manual-override discrepancy warnings and topical/nebule support, selective
-(per-bullet) advice pack application with post-hoc customization,
-editable-in-place follow-up items with full Urdu/English support,
-Treatment→Reconciliation drug carry-over, three-way parent-facing language
-with per-Medications and per-Advice-Pack overrides, formulation brand names,
-print/PDF export, WHO growth Z-scores/charts, an admin-editable logo, and six
-governed content types (Advice Packs, Follow-up Modules, Investigation
-Panels, Dose Rules, Frequency Phrases, Vocabulary Lists) — the last two
-turning what used to be hardcoded frequency wording and rapid-fill chip
-lists into content Faculty/Admin can actually edit without a code change.
-
-The formulary runs to 134 drugs (up from an initial 15) with real Pakistani
-brand names added only where the exact seeded strength was confirmed —
-several system dose rules are deliberately absent instead (Insulin, Sodium
-Bicarbonate, Lamotrigine) where a single per-kg number would misrepresent a
-genuinely individualized/titrated dose, per this project's "never invent a
-clinical fact" rule. Real username/password authentication for all three
-roles with server-side authorization, and a real shared Postgres database
-reachable from multiple devices on the same network.
-
-Not yet built (deliberately, per the project's V1 scope): digital SR
-signatures, TLS (see the security note under "Access from a phone"), a
-patient/admission intake UI (both are seed/reference data today — the
-intended integration point for a future inpatient feed), and file-upload
-storage (the logo, and any future image field, is a URL rather than an
-upload — there's no object storage in this stack yet).
+* The Urdu interface covers navigation, headings, greetings and common actions. Some secondary labels are still in English.
+* Language and direction are applied after hydration, so Urdu users may see a brief flash of the English layout.
+* I couldn't test casting against real Chromecast hardware from the development environment. The receiver and autocast script follow the documented Cast SDK and pychromecast APIs; please check them on your device.
+* Live TV playback relies on the TV's browser being able to decode H.264/AAC HLS. Chromecast can.
+* There are no push or scheduled notifications. Task reminders are stored as notes and shown in the app only.
+* Live streams can go offline or change URL at any time. The player then shows an error with Retry and a link to the official website.

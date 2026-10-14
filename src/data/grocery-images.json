@@ -1,0 +1,338 @@
+{
+  "apple": {
+    "src": "/groceries/apple.webp",
+    "title": "Red Apples",
+    "author": "mari27454 (Marialba Italia)",
+    "license": "CC BY 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0/",
+    "sourceUrl": "https://www.flickr.com/photos/23008537@N05/8250633862"
+  },
+  "atta": {
+    "src": "/groceries/atta.webp",
+    "title": "Pain au levain - AP and whole wheat flours",
+    "author": "grongar",
+    "license": "CC BY 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0/",
+    "sourceUrl": "https://www.flickr.com/photos/70757891@N00/8167286703"
+  },
+  "banana": {
+    "src": "/groceries/banana.webp",
+    "title": "Banana - Isolated black",
+    "author": "robin_24",
+    "license": "CC BY 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0/",
+    "sourceUrl": "https://www.flickr.com/photos/53507547@N06/5131280208"
+  },
+  "basmati": {
+    "src": "/groceries/basmati.webp",
+    "title": "Basmati Rice",
+    "author": "cookbookman17",
+    "license": "CC BY 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0/",
+    "sourceUrl": "https://www.flickr.com/photos/58545726@N02/6121427720"
+  },
+  "bitter-gourd": {
+    "src": "/groceries/bitter-gourd.webp",
+    "title": "A pile of green bitter gourds (karela) with sharp, bumpy textures arranged over a blue sheet, captured at a local market in Peruvayal, Kozhikode.",
+    "author": "Bigul Malayi",
+    "license": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "sourceUrl": "https://wordpress.org/photos/photo/85068fb68f/"
+  },
+  "bread": {
+    "src": "/groceries/bread.webp",
+    "title": "Three slices",
+    "author": "Nick Saltmarsh",
+    "license": "CC BY 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0/",
+    "sourceUrl": "https://www.flickr.com/photos/7554150@N05/3116061949"
+  },
+  "cabbage": {
+    "src": "/groceries/cabbage.webp",
+    "title": "Fresh Cabbage at the West Coast Farmers' Market in Corner Brook, Newfoundland",
+    "author": "MariyaZ",
+    "license": "CC BY 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0/",
+    "sourceUrl": "https://www.flickr.com/photos/15601975@N02/5097445844"
+  },
+  "capsicum": {
+    "src": "/groceries/capsicum.webp",
+    "title": "Green Bell Pepper",
+    "author": "Sharunas Jurevic",
+    "license": "CC BY 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0/",
+    "sourceUrl": "https://www.flickr.com/photos/51671102@N04/5572058548"
+  },
+  "carrot": {
+    "src": "/groceries/carrot.webp",
+    "title": "Carrots",
+    "author": "John-Morgan",
+    "license": "CC BY 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0/",
+    "sourceUrl": "https://www.flickr.com/photos/24742305@N00/2256197976"
+  },
+  "cauliflower": {
+    "src": "/groceries/cauliflower.webp",
+    "title": "Part of a white cauliflower with leaves on the side",
+    "author": "Horia Varlan",
+    "license": "CC BY 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0/",
+    "sourceUrl": "https://www.flickr.com/photos/10361931@N06/4268969014"
+  },
+  "cheese": {
+    "src": "/groceries/cheese.webp",
+    "title": "cheeses",
+    "author": "_gee_",
+    "license": "CC BY 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0/",
+    "sourceUrl": "https://www.flickr.com/photos/32426344@N00/4090407169"
+  },
+  "cucumber": {
+    "src": "/groceries/cucumber.webp",
+    "title": "Cucumber Harvest",
+    "author": "David Davies",
+    "license": "CC BY-SA 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0/",
+    "sourceUrl": "https://www.flickr.com/photos/44124390461@N01/4782586685"
+  },
+  "daliya": {
+    "src": "/groceries/daliya.webp",
+    "title": "Bulgur Wheat and Walnut Salad",
+    "author": "Rooey202",
+    "license": "CC BY 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0/",
+    "sourceUrl": "https://www.flickr.com/photos/50284194@N00/5955383666"
+  },
+  "eggs": {
+    "src": "/groceries/eggs.webp",
+    "title": "Brown Eggs",
+    "author": "jronaldlee",
+    "license": "CC BY 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0/",
+    "sourceUrl": "https://www.flickr.com/photos/37176760@N06/4161038758"
+  },
+  "garlic": {
+    "src": "/groceries/garlic.webp",
+    "title": "Group of Garlic Bulbs",
+    "author": "Image Catalog",
+    "license": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "sourceUrl": "https://www.flickr.com/photos/132795455@N08/17665945114"
+  },
+  "ginger": {
+    "src": "/groceries/ginger.webp",
+    "title": "Ginger root",
+    "author": "Kjokkenutstyr.net",
+    "license": "CC BY-SA 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0/",
+    "sourceUrl": "https://www.flickr.com/photos/146966953@N02/37310945730"
+  },
+  "grapes": {
+    "src": "/groceries/grapes.webp",
+    "title": "Green grapes, green colander",
+    "author": "Dano",
+    "license": "CC BY 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0/",
+    "sourceUrl": "https://www.flickr.com/photos/36101697408@N01/190418664"
+  },
+  "green-chilli": {
+    "src": "/groceries/green-chilli.webp",
+    "title": "Green Chilli",
+    "author": "Swami Stream",
+    "license": "CC BY 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0/",
+    "sourceUrl": "https://www.flickr.com/photos/21063397@N00/2712742030"
+  },
+  "green-tea": {
+    "src": "/groceries/green-tea.webp",
+    "title": "Free hot green tea cup",
+    "author": "Unknown",
+    "license": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "sourceUrl": "https://www.rawpixel.com/image/5915419/image-public-domain-leaf-green"
+  },
+  "gur": {
+    "src": "/groceries/gur.webp",
+    "title": "Jaggery dans une sucrerie traditionnelle (Kallikoppalu, Inde)",
+    "author": "dalbera",
+    "license": "CC BY 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0/",
+    "sourceUrl": "https://www.flickr.com/photos/72746018@N00/14528469953"
+  },
+  "haldi": {
+    "src": "/groceries/haldi.webp",
+    "title": "Turmeric Root vs Turmeric Powder",
+    "author": "formulatehealth",
+    "license": "CC BY 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0/",
+    "sourceUrl": "https://www.flickr.com/photos/189590028@N07/50396528903"
+  },
+  "honey": {
+    "src": "/groceries/honey.webp",
+    "title": "Small Honey Jar with Honeycomb",
+    "author": "Alabama Extension",
+    "license": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "sourceUrl": "https://www.flickr.com/photos/184594136@N08/51330849013"
+  },
+  "ice-cream": {
+    "src": "/groceries/ice-cream.webp",
+    "title": "Cotton Candy Ice Cream @ Scoop Shack",
+    "author": "David Berkowitz",
+    "license": "CC BY 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0/",
+    "sourceUrl": "https://www.flickr.com/photos/25897810@N00/7705213750"
+  },
+  "lassi": {
+    "src": "/groceries/lassi.webp",
+    "title": "Mango Lassi",
+    "author": "joo0ey",
+    "license": "CC BY 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0/",
+    "sourceUrl": "https://www.flickr.com/photos/37238219@N00/4142353694"
+  },
+  "lemon": {
+    "src": "/groceries/lemon.webp",
+    "title": "limes up close",
+    "author": "Florian Maul",
+    "license": "CC BY-SA 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0/",
+    "sourceUrl": "https://www.flickr.com/photos/22451763@N00/69667785"
+  },
+  "lobia": {
+    "src": "/groceries/lobia.webp",
+    "title": "red kidney bean curry (rajma)",
+    "author": "Thriving Vegetarian",
+    "license": "CC BY 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0/",
+    "sourceUrl": "https://www.flickr.com/photos/90155432@N02/9411207170"
+  },
+  "mango": {
+    "src": "/groceries/mango.webp",
+    "title": "mango tree",
+    "author": "robert and fabienne",
+    "license": "CC BY 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0/",
+    "sourceUrl": "https://www.flickr.com/photos/50445916@N00/227084493"
+  },
+  "milk": {
+    "src": "/groceries/milk.webp",
+    "title": "Glass of milk",
+    "author": "Marina Shemesh",
+    "license": "CC BY-SA 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0/",
+    "sourceUrl": "https://www.flickr.com/photos/52743784@N05/6331771638"
+  },
+  "naan": {
+    "src": "/groceries/naan.webp",
+    "title": "Naan bread from Curry In a Hurry, Edinburgh (aka The Raj restaurant in Leith)",
+    "author": "www.theedinburghblog.co.uk",
+    "license": "CC BY 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0/",
+    "sourceUrl": "https://www.flickr.com/photos/15441925@N00/1433378735"
+  },
+  "nimko": {
+    "src": "/groceries/nimko.webp",
+    "title": "Bombay Mix 2",
+    "author": "Harlequeen",
+    "license": "CC BY 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0/",
+    "sourceUrl": "https://www.flickr.com/photos/27887748@N00/5476934321"
+  },
+  "okra": {
+    "src": "/groceries/okra.webp",
+    "title": "Big Ass Okra",
+    "author": "Todd Dwyer",
+    "license": "CC BY-SA 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0/",
+    "sourceUrl": "https://www.flickr.com/photos/36813683@N03/5705422092"
+  },
+  "onion": {
+    "src": "/groceries/onion.webp",
+    "title": "Red Onions",
+    "author": "Scott 97006",
+    "license": "CC BY 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0/",
+    "sourceUrl": "https://www.flickr.com/photos/29487672@N07/14760536424"
+  },
+  "peas": {
+    "src": "/groceries/peas.webp",
+    "title": "Free image green peas pod",
+    "author": "Unknown",
+    "license": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "sourceUrl": "https://www.rawpixel.com/image/5925207/photo-image-public-domain-plant-green"
+  },
+  "pomegranate": {
+    "src": "/groceries/pomegranate.webp",
+    "title": "Pomegranate",
+    "author": "Anton Photos",
+    "license": "CC BY-SA 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0/",
+    "sourceUrl": "https://www.flickr.com/photos/32066472@N03/6782974205"
+  },
+  "potato": {
+    "src": "/groceries/potato.webp",
+    "title": "Potatoes",
+    "author": "16:9clue",
+    "license": "CC BY 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0/",
+    "sourceUrl": "https://www.flickr.com/photos/53255320@N07/6762195603"
+  },
+  "red-chilli": {
+    "src": "/groceries/red-chilli.webp",
+    "title": "Red Chili Powder (Lall Mirch)",
+    "author": "ajay_suresh",
+    "license": "CC BY 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0/",
+    "sourceUrl": "https://www.flickr.com/photos/83136374@N05/49695826571"
+  },
+  "salt": {
+    "src": "/groceries/salt.webp",
+    "title": "Salt Crystals",
+    "author": "Dawn Endico",
+    "license": "CC BY-SA 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0/",
+    "sourceUrl": "https://www.flickr.com/photos/51035743246@N01/889837"
+  },
+  "sela-rice": {
+    "src": "/groceries/sela-rice.webp",
+    "title": "grains of rice",
+    "author": "ttarvind",
+    "license": "CC BY-SA 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0/",
+    "sourceUrl": "https://www.flickr.com/photos/86112481@N00/3642072038"
+  },
+  "sugar": {
+    "src": "/groceries/sugar.webp",
+    "title": "White-Sugar-Crystals_91637-480x360",
+    "author": "Public Domain Photos",
+    "license": "CC BY 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0/",
+    "sourceUrl": "https://www.flickr.com/photos/28958738@N06/4905066798"
+  },
+  "tomato": {
+    "src": "/groceries/tomato.webp",
+    "title": "tomatoes",
+    "author": "Vladimir Morozov",
+    "license": "CC BY-SA 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0/",
+    "sourceUrl": "https://www.flickr.com/photos/27429206@N02/2694720316"
+  },
+  "watermelon": {
+    "src": "/groceries/watermelon.webp",
+    "title": "Watermelon",
+    "author": "gianouts",
+    "license": "CC BY 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0/",
+    "sourceUrl": "https://www.flickr.com/photos/78624494@N00/5330763573"
+  },
+  "zeera": {
+    "src": "/groceries/zeera.webp",
+    "title": "Saag paneer - Cumin seeds",
+    "author": "grongar",
+    "license": "CC BY 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0/",
+    "sourceUrl": "https://www.flickr.com/photos/70757891@N00/7160308468"
+  }
+}
