@@ -58,3 +58,4 @@ __pycache__/
 /apps/mobile/android/build/
 /apps/mobile/.keystore/
 /apps/mobile/release/
+/apps/mobile/android/.kotlin/
