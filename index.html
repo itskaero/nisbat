@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Nisbat Home — your family's day, on every screen</title>
+<meta name="description" content="Nisbat Home is a private family dashboard for Pakistani homes: Quran, namaz, azkar, groceries with official prices, tasks, news, weather and live TV — on your Chromecast, your phones and your browser, running on your own home server." />
+<meta name="theme-color" content="#08100d" />
+<meta property="og:title" content="Nisbat Home" />
+<meta property="og:description" content="Your family's day, on every screen — TV, phones and web, from your own home server." />
+<meta property="og:image" content="assets/tv-home.webp" />
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600&family=Noto+Nastaliq+Urdu:wght@400;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #070b0a; --panel: #0d1412; --panel-2: #111a17; --line: rgba(255,255,255,.08); --line-2: rgba(255,255,255,.14);
+    --ink: #eef3f0; --ink-2: #a7b5ae; --ink-3: #6f7e77;
+    --emerald: #45d49a; --emerald-2: #2fb37f; --gold: #e9b66b; --cyan: #65c7e8; --coral: #f07c65;
+    --serif: "Fraunces", Georgia, serif; --sans: "Inter", "Segoe UI", system-ui, sans-serif; --urdu: "Noto Nastaliq Urdu", serif;
+    --frame: 1240px;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  a { color: inherit; text-decoration: none; }
+  img { max-width: 100%; display: block; }
+  .frame { max-width: var(--frame); margin: 0 auto; border-inline: 1px solid var(--line); }
+  .wrap { padding-inline: clamp(20px, 4vw, 48px); }
+  .urdu { font-family: var(--urdu); line-height: 2.1; }
+  .serif { font-family: var(--serif); font-weight: 400; letter-spacing: -.02em; }
+  .accent { font-style: italic; color: var(--emerald); }
+  .gold { color: var(--gold); }
+  .muted { color: var(--ink-2); }
+  .eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); }
+  .eyebrow::before { content: ""; width: 6px; height: 6px; border-radius: 99px; background: var(--emerald); box-shadow: 0 0 12px var(--emerald); }
+
+  /* Nav */
+  header.nav { position: sticky; top: 0; z-index: 20; background: rgba(7,11,10,.78); backdrop-filter: blur(14px); border-bottom: 1px solid var(--line); }
+  .nav-inner { display: flex; align-items: center; gap: 28px; height: 68px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 19px; }
+  .brand img { width: 28px; height: 28px; }
+  .nav-links { display: flex; gap: 4px; }
+  .nav-links a { padding: 7px 13px; border-radius: 10px; color: var(--ink-2); font-size: 14.5px; font-weight: 500; }
+  .nav-links a:hover { color: var(--ink); background: rgba(255,255,255,.05); }
+  .nav .cta { margin-inline-start: auto; }
+  .btn { display: inline-flex; align-items: center; gap: 9px; padding: 11px 20px; border-radius: 999px; font-weight: 600; font-size: 15px; border: 1px solid transparent; transition: transform .2s, background .2s, box-shadow .2s; }
+  .btn:hover { transform: translateY(-1px); }
+  .btn-primary { background: var(--emerald); color: #04140d; box-shadow: 0 10px 40px -10px rgba(69,212,154,.6); }
+  .btn-light { background: #f1f4f2; color: #0a0f0d; }
+  .btn-ghost { border-color: var(--line-2); color: var(--ink); }
+  .btn svg { width: 18px; height: 18px; }
+
+  /* Hero */
+  .hero { position: relative; text-align: center; padding: 72px 0 0; overflow: hidden; }
+  .pill { display: inline-flex; align-items: center; gap: 10px; padding: 5px 14px 5px 5px; border: 1px solid var(--line-2); border-radius: 999px; font-size: 13.5px; color: var(--ink-2); }
+  .pill b { background: rgba(69,212,154,.14); color: var(--emerald); border-radius: 99px; padding: 2px 10px; font-weight: 600; font-size: 12px; }
+  .hero h1 { margin: 26px auto 0; max-width: 1000px; font-size: clamp(44px, 6.4vw, 86px); line-height: 1; }
+  .hero .ur { margin-top: 18px; font-size: clamp(20px, 2.4vw, 26px); color: var(--ink-2); }
+  .hero p.lead { margin: 14px auto 0; max-width: 640px; font-size: clamp(16px, 1.6vw, 18.5px); color: var(--ink-2); }
+  .hero .ctas { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 30px; }
+  .hero .note { margin-top: 14px; font-size: 12.5px; color: var(--ink-3); }
+  #dots { position: absolute; inset: auto 0 0 0; height: 420px; width: 100%; opacity: .95; pointer-events: none; }
+  .hero-shot { position: relative; margin: 46px auto 0; max-width: 1060px; padding-inline: clamp(12px, 3vw, 32px); }
+  .tv { border-radius: 18px; padding: 10px; background: linear-gradient(180deg, #1b2421, #0b100e); border: 1px solid var(--line-2); box-shadow: 0 40px 120px -40px rgba(69,212,154,.35), 0 30px 80px -30px #000; }
+  .tv img { border-radius: 10px; }
+  .tv-stand { width: 34%; height: 14px; margin: 0 auto; background: linear-gradient(180deg, #1b2421, #070b0a); border-radius: 0 0 14px 14px; }
+  .phone-float { position: absolute; width: clamp(100px, 14%, 158px); right: clamp(0px, 1vw, 16px); bottom: -24px; border-radius: 26px; padding: 6px; background: #0e1513; border: 1px solid var(--line-2); box-shadow: 0 30px 60px -20px #000; }
+  .phone-float img { border-radius: 21px; }
+
+  section { border-top: 1px solid var(--line); }
+  .sec { padding: clamp(64px, 9vw, 110px) 0; }
+  h2.title { margin: 14px 0 0; font-size: clamp(34px, 4.6vw, 58px); line-height: 1.04; max-width: 860px; }
+  h2.title .soft { color: var(--ink-3); }
+
+  /* Surfaces */
+  .surfaces { display: grid; grid-template-columns: 1.35fr 1fr; gap: 16px; margin-top: 44px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 20px; overflow: hidden; }
+  .card .body { padding: 22px 24px 24px; }
+  .card h3 { margin: 0; font-size: 19px; font-weight: 600; }
+  .card p { margin: 6px 0 0; color: var(--ink-2); font-size: 15px; }
+  .shot { background: radial-gradient(120% 90% at 50% 0%, #15241f, #0a100e); padding: 22px 22px 0; }
+  .shot img { border-radius: 12px 12px 0 0; border: 1px solid var(--line); border-bottom: 0; }
+  .shot.phones { display: flex; gap: 12px; justify-content: center; padding: 22px 22px 0; }
+  .shot.phones img { width: 46%; border-radius: 18px 18px 0 0; }
+  .wide { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1.3fr; align-items: stretch; }
+  .wide .shot { padding: 22px 0 0 22px; }
+  .wide .shot img { border-radius: 12px 0 0 0; border-right: 0; }
+
+  /* Modules */
+  .modules { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 20px; overflow: hidden; margin-top: 44px; }
+  .mod { background: var(--panel); padding: 24px; min-height: 172px; }
+  .mod .ic { width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center; background: rgba(69,212,154,.12); color: var(--emerald); }
+  .mod .ic svg { width: 20px; height: 20px; }
+  .mod h3 { margin: 14px 0 0; font-size: 16.5px; font-weight: 600; display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+  .mod h3 .urdu { font-size: 14px; font-weight: 400; color: var(--ink-3); line-height: 1.6; }
+  .mod p { margin: 6px 0 0; font-size: 14px; color: var(--ink-2); }
+
+  /* Honest */
+  .quote { font-size: clamp(26px, 3.4vw, 42px); line-height: 1.2; max-width: 980px; margin: 18px 0 0; }
+  .quote .soft { color: var(--ink-3); }
+  .sources { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 40px; }
+  .src { padding: 22px; border: 1px solid var(--line); border-radius: 18px; background: var(--panel); }
+  .src h4 { margin: 0; font-size: 15.5px; }
+  .src p { margin: 6px 0 12px; font-size: 14px; color: var(--ink-2); }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag { font: 500 11.5px var(--sans); color: var(--ink-3); border: 1px solid var(--line); padding: 3px 8px; border-radius: 6px; }
+
+  /* How */
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 44px; counter-reset: s; }
+  .step { position: relative; padding: 26px 24px; border: 1px solid var(--line); border-radius: 18px; background: linear-gradient(180deg, var(--panel-2), var(--panel)); }
+  .step::before { counter-increment: s; content: counter(s, decimal-leading-zero); font: 500 13px var(--sans); color: var(--emerald); letter-spacing: .1em; }
+  .step h3 { margin: 10px 0 0; font-size: 18px; }
+  .step p { margin: 6px 0 0; color: var(--ink-2); font-size: 14.5px; }
+
+  /* Phone gallery */
+  .gallery { display: flex; gap: 16px; overflow-x: auto; padding: 40px clamp(20px, 4vw, 48px) 8px; scroll-snap-type: x mandatory; scrollbar-width: none; }
+  .gallery::-webkit-scrollbar { display: none; }
+  .gallery figure { margin: 0; flex: 0 0 220px; scroll-snap-align: start; }
+  .gallery img { border-radius: 24px; border: 1px solid var(--line-2); }
+  .gallery figcaption { margin-top: 10px; font-size: 13.5px; color: var(--ink-2); }
+
+  /* Download */
+  .download { display: grid; grid-template-columns: 1.1fr 1fr; gap: 16px; margin-top: 44px; }
+  .dl-main { padding: 34px; border-radius: 22px; border: 1px solid rgba(69,212,154,.35); background: radial-gradient(120% 120% at 0% 0%, rgba(69,212,154,.16), transparent 55%), var(--panel); }
+  .dl-main h3 { margin: 0; font: 400 34px/1.1 var(--serif); }
+  .dl-main ol { margin: 18px 0 0; padding-inline-start: 20px; color: var(--ink-2); font-size: 15px; }
+  .dl-main ol li { margin: 6px 0; }
+  .dl-side { display: grid; gap: 16px; }
+  .meta { display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; font-size: 14px; color: var(--ink-2); }
+  .meta dt { color: var(--ink-3); }
+  code { font-family: ui-monospace, "Cascadia Code", monospace; font-size: 12.5px; color: var(--ink-2); word-break: break-all; }
+
+  /* FAQ */
+  .faq { display: grid; grid-template-columns: 1fr 1.4fr; gap: 40px; }
+  details { border-bottom: 1px solid var(--line); padding: 18px 0; }
+  summary { cursor: pointer; list-style: none; display: flex; justify-content: space-between; gap: 20px; font-weight: 500; font-size: 16.5px; }
+  summary::-webkit-details-marker { display: none; }
+  summary::after { content: "+"; display: grid; place-items: center; width: 26px; height: 26px; flex: none; border-radius: 99px; background: #f1f4f2; color: #0a0f0d; font-weight: 600; transition: transform .2s; }
+  details[open] summary::after { transform: rotate(45deg); }
+  details p { margin: 10px 0 0; color: var(--ink-2); font-size: 15px; }
+
+  /* Final CTA + footer */
+  .final { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; align-items: center; }
+  .final h2 { font-size: clamp(34px, 4.4vw, 56px); line-height: 1.05; margin: 0; }
+  .emblem { justify-self: center; text-align: center; }
+  .emblem img { width: 140px; margin: 0 auto; filter: drop-shadow(0 0 40px rgba(69,212,154,.35)); }
+  .emblem .name { font: 500 40px var(--serif); margin-top: 10px; }
+  footer { border-top: 1px solid var(--line); padding: 46px 0 0; overflow: hidden; }
+  .foot { display: grid; grid-template-columns: 1.4fr repeat(3, 1fr); gap: 30px; font-size: 14px; }
+  .foot h5 { margin: 0 0 10px; font-size: 13px; color: var(--ink); }
+  .foot a { display: block; color: var(--ink-3); padding: 3px 0; }
+  .foot a:hover { color: var(--ink); }
+  .wordmark { font: 400 clamp(90px, 22vw, 290px)/0.8 var(--serif); letter-spacing: -.05em; margin: 40px 0 -0.12em; background: linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.02)); -webkit-background-clip: text; background-clip: text; color: transparent; text-align: center; user-select: none; }
+  .fine { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; padding: 18px 0 26px; border-top: 1px solid var(--line); color: var(--ink-3); font-size: 12.5px; }
+
+  .reveal { opacity: 0; transform: translateY(18px); transition: opacity .7s ease, transform .7s ease; }
+  .reveal.in { opacity: 1; transform: none; }
+  @media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; transform: none; transition: none; } html { scroll-behavior: auto; } }
+
+  @media (max-width: 900px) {
+    .nav-links { display: none; }
+    .surfaces, .wide, .download, .faq, .final { grid-template-columns: 1fr; }
+    .wide .shot { padding: 22px 22px 0; } .wide .shot img { border-radius: 12px 12px 0 0; border-right: 1px solid var(--line); }
+    .modules { grid-template-columns: repeat(2, 1fr); }
+    .sources, .steps { grid-template-columns: 1fr; }
+    .foot { grid-template-columns: 1fr 1fr; }
+    .phone-float { display: none; }
+  }
+  @media (max-width: 520px) { .modules { grid-template-columns: 1fr; } .frame { border-inline: 0; } }
+</style>
+</head>
+<body>
+<div class="frame">
+  <header class="nav">
+    <div class="wrap nav-inner">
+      <a class="brand" href="#top"><img src="assets/icon.svg" alt="" />nisbat<span class="gold">.</span></a>
+      <nav class="nav-links" aria-label="Sections">
+        <a href="#screens">Screens</a><a href="#features">Features</a><a href="#honest">Sources</a><a href="#how">Setup</a><a href="#download">Download</a><a href="#faq">FAQ</a>
+      </nav>
+      <a class="btn btn-light cta" href="#download">Get Nisbat</a>
+    </div>
+  </header>
+
+  <main id="top">
+    <div class="hero">
+      <div class="wrap">
+        <a class="pill" href="#download"><b>New</b> Android app &amp; a TV app built for Chromecast ›</a>
+        <h1 class="serif">Your family's day, <span class="accent">on every screen</span></h1>
+        <p class="ur urdu" lang="ur" dir="rtl">گھر کا دن، ہر اسکرین پر</p>
+        <p class="lead">Quran, namaz, azkar, the grocery list with this week's official prices, tasks, news, weather and live TV — on the living-room TV, every phone in the house and the browser. It runs on your own home server; your family's data never leaves the house.</p>
+        <div class="ctas">
+          <a class="btn btn-primary" href="https://github.com/itskaero/nisbat/releases/latest/download/nisbat.apk">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0-4-4m4 4 4-4M5 21h14"/></svg>Download for Android
+          </a>
+          <a class="btn btn-ghost" href="#how">Set up the TV</a>
+        </div>
+        <p class="note">Free · Android 7 and newer · Chromecast, Google TV or any browser for the big screen</p>
+      </div>
+      <canvas id="dots" aria-hidden="true"></canvas>
+      <div class="hero-shot">
+        <div class="tv"><img src="assets/tv-home.webp" alt="Nisbat on the TV: clock, ayah of the day, weather, prayer times and a sher of the day" width="1280" height="720" /></div>
+        <div class="tv-stand"></div>
+        <div class="phone-float"><img src="assets/app-remote.webp" alt="The phone remote" width="390" height="844" loading="lazy" /></div>
+      </div>
+    </div>
+
+    <section id="screens" class="sec">
+      <div class="wrap">
+        <span class="eyebrow">Three screens, one home</span>
+        <h2 class="title serif">The TV, the phones and the browser <span class="soft">— all reading the same family lists.</span></h2>
+        <div class="surfaces">
+          <article class="card reveal">
+            <div class="shot"><img src="assets/tv-ambient.webp" alt="The ambient screen: large clock, prayer countdown, weather, air quality and the ayah of the day" loading="lazy" /></div>
+            <div class="body"><h3>A TV app made for the Chromecast</h3><p>A light app built for the Chromecast's older browser: it opens instantly, never reloads between screens, and drifts into a calm ambient screen — clock, next prayer, weather, smog, the ayah or sher of the day, and family photos.</p></div>
+          </article>
+          <article class="card reveal">
+            <div class="shot phones"><img src="assets/app-home.webp" alt="The Android app's home screen" loading="lazy" /><img src="assets/app-quran.webp" alt="The Quran list in the app" loading="lazy" /></div>
+            <div class="body"><h3>An Android app with its own design</h3><p>Not a website in a wrapper: tabs, bottom sheets, swipe to remove, haptics on the tasbeeh, prayer notifications, and it works offline with the last synced data.</p></div>
+          </article>
+          <article class="card wide reveal">
+            <div class="body" style="align-self:center"><h3>Your phone is the remote</h3><p>No QR codes, no pairing codes. The first time the app opens, the TV asks <em>“Allow Ali's phone?”</em> — press OK once. After that the phone finds the TV by itself: D-pad or swipe, play/pause, type on the TV, and “Show on TV” for whatever you're looking at.</p></div>
+            <div class="shot"><img src="assets/tv-pairing.webp" alt="The TV asking whether to allow a phone" loading="lazy" /></div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="features" class="sec">
+      <div class="wrap">
+        <span class="eyebrow">What's inside</span>
+        <h2 class="title serif">Everything a Pakistani home <span class="accent">checks every day.</span></h2>
+        <div class="modules reveal">
+          <div class="mod"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 4h7a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H2zM22 4h-7a3 3 0 0 0-3 3v13a2 2 0 0 1 2-2h8z"/></svg></div><h3>Tadabur Quran <span class="urdu" lang="ur">قرآن</span></h3><p>Uthmani text, nine translations, eight reciters, bookmarks and reading progress shared across the family.</p></div>
+          <div class="mod"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 5h4M20 3v4M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></div><h3>Namaz <span class="urdu" lang="ur">نماز</span></h3><p>Today's times, a countdown, the month's timetable, Islamic dates and reminders on the TV and phone.</p></div>
+          <div class="mod"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3 1.9 5.8L20 9l-4.9 3.6L17 19l-5-3.6L7 19l1.9-6.4L4 9l6.1-.2z"/></svg></div><h3>Azkar &amp; tasbeeh <span class="urdu" lang="ur">اذکار</span></h3><p>Hisn al-Muslim with counters and recitation, plus a tasbeeh the TV remote's OK button can count.</p></div>
+          <div class="mod"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 18v-6a9 9 0 0 1 18 0v6M21 19a2 2 0 0 1-2 2h-1v-6h3zM3 19a2 2 0 0 0 2 2h1v-6H3z"/></svg></div><h3>Sunein <span class="urdu" lang="ur">سنیں</span></h3><p>Urdu podcasts and Radio Pakistan; stop on the TV, carry on from your phone where you left off.</p></div>
+          <div class="mod"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/><path d="M2 3h3l2.7 12.4a2 2 0 0 0 2 1.6h8.6a2 2 0 0 0 2-1.6L22 7H6"/></svg></div><h3>Saman <span class="urdu" lang="ur">سامان</span></h3><p>One grocery list for the whole family, with this week's PBS prices for your city.</p></div>
+          <div class="mod"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg></div><h3>Bazaar <span class="urdu" lang="ur">بازار</span></h3><p>Dollar, riyal and dirham rates with a rupee converter — handy for money sent from abroad.</p></div>
+          <div class="mod"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v2M4.9 4.9l1.4 1.4M20 12h2M17.7 6.3l1.4-1.4M16 12a4 4 0 1 0-7.4 2.1M13 22H7a5 5 0 1 1 4.9-6H13a3 3 0 0 1 0 6z"/></svg></div><h3>Mausam &amp; smog <span class="urdu" lang="ur">موسم</span></h3><p>The forecast, sunrise and sunset, and air quality with plain advice for elders and children.</p></div>
+          <div class="mod"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1zM4 22v-7"/></svg></div><h3>Tareekh &amp; Kalam <span class="urdu" lang="ur">پاکستان</span></h3><p>National days, this day in Pakistan's history, and a couplet from Iqbal or Ghalib.</p></div>
+        </div>
+        <p class="muted" style="margin-top:18px;font-size:14.5px">Also: tasks for the household, Pakistan-first news from publishers' feeds, official live TV streams, and a family photo frame on the ambient screen.</p>
+      </div>
+    </section>
+
+    <section id="honest" class="sec">
+      <div class="wrap">
+        <span class="eyebrow">Honest by design</span>
+        <p class="quote serif">«Every number says where it came from <span class="soft">— and nothing is made up to fill a gap.»</span></p>
+        <div class="sources">
+          <div class="src reveal"><h4>Prices from the government</h4><p>Grocery prices come straight from the Pakistan Bureau of Statistics' weekly report for your city. Items PBS doesn't cover are marked as estimates or left for you to fill in.</p><div class="tags"><span class="tag">PBS · SPI</span><span class="tag">17 cities</span><span class="tag">weekly</span></div></div>
+          <div class="src reveal"><h4>Rates labelled for what they are</h4><p>Official State Bank rates when available; otherwise open market reference rates, clearly marked as not the State Bank's rate.</p><div class="tags"><span class="tag">SBP</span><span class="tag">open data</span></div></div>
+          <div class="src reveal"><h4>No piracy, no paywall tricks</h4><p>Live TV plays only streams broadcasters publish themselves. News shows headlines and short excerpts; the full story stays on the publisher's site.</p><div class="tags"><span class="tag">AlQuran Cloud</span><span class="tag">AlAdhan</span><span class="tag">Open-Meteo</span><span class="tag">Wikipedia</span></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="how" class="sec">
+      <div class="wrap">
+        <span class="eyebrow">Set up once</span>
+        <h2 class="title serif">A small server at home, <span class="accent">everything else follows.</span></h2>
+        <div class="steps">
+          <div class="step reveal"><h3>Run Nisbat at home</h3><p>On a NAS (ZimaOS, Synology, Unraid…), a Raspberry Pi or a spare laptop, with one <code>docker compose up</code>. The family's lists live there, not in the cloud.</p></div>
+          <div class="step reveal"><h3>It appears on the TV</h3><p>Nisbat puts itself on the Chromecast whenever the TV is on its input — and never pulls you away from cable or dish.</p></div>
+          <div class="step reveal"><h3>Phones join with one OK</h3><p>Install the app; it finds Nisbat on your Wi-Fi. The TV asks “Allow this phone?” — press OK, and that phone is in for good.</p></div>
+        </div>
+      </div>
+      <div class="gallery reveal" aria-label="The Android app">
+        <figure><img src="assets/app-home.webp" alt="" loading="lazy" /><figcaption>Home</figcaption></figure>
+        <figure><img src="assets/app-remote.webp" alt="" loading="lazy" /><figcaption>The TV remote</figcaption></figure>
+        <figure><img src="assets/app-namaz.webp" alt="" loading="lazy" /><figcaption>Namaz</figcaption></figure>
+        <figure><img src="assets/app-saman.webp" alt="" loading="lazy" /><figcaption>Adding to Saman with PBS prices</figcaption></figure>
+        <figure><img src="assets/app-azkar.webp" alt="" loading="lazy" /><figcaption>Azkar</figcaption></figure>
+        <figure><img src="assets/app-quran.webp" alt="" loading="lazy" /><figcaption>Quran</figcaption></figure>
+      </div>
+    </section>
+
+    <section id="download" class="sec">
+      <div class="wrap">
+        <span class="eyebrow">Download</span>
+        <h2 class="title serif">Get Nisbat <span class="soft">for your family's phones.</span></h2>
+        <div class="download">
+          <div class="dl-main reveal">
+            <h3>Nisbat for Android</h3>
+            <p class="muted" style="margin:8px 0 0">Version <span data-version>1.0.0</span> · signed APK · 4.3 MB</p>
+            <div style="margin-top:22px;display:flex;gap:10px;flex-wrap:wrap">
+              <a class="btn btn-primary" href="https://github.com/itskaero/nisbat/releases/latest/download/nisbat.apk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 3v12m0 0-4-4m4 4 4-4M5 21h14"/></svg>Download APK</a>
+              <a class="btn btn-ghost" href="https://github.com/itskaero/nisbat/releases">All releases</a>
+            </div>
+            <ol>
+              <li>Open the download on the phone and tap <strong>Install</strong>. Android asks once to allow installs from your browser.</li>
+              <li>Open Nisbat on the home Wi-Fi — it finds your Nisbat server by itself.</li>
+              <li>Press <strong>OK</strong> on the TV when it asks to allow the phone.</li>
+            </ol>
+          </div>
+          <div class="dl-side">
+            <div class="card reveal"><div class="body"><h3>Requirements</h3>
+              <dl class="meta" style="margin-top:12px"><dt>Phone</dt><dd>Android 7.0 or newer</dd><dt>Server</dt><dd>Any Docker host on your home network</dd><dt>TV</dt><dd>Chromecast, Google TV or any browser</dd></dl></div></div>
+            <div class="card reveal"><div class="body"><h3>Check the download</h3><p>The SHA-256 of each APK is listed on its release page. Updates install over the old version because every release is signed with the same key.</p></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="faq" class="sec">
+      <div class="wrap faq">
+        <div><span class="eyebrow">FAQ</span><h2 class="title serif" style="font-size:clamp(30px,3.6vw,44px)">Everything you might be <span class="accent">wondering</span></h2></div>
+        <div>
+          <details><summary>Does my family's data go to the internet?</summary><p>No. Lists, Quran progress, azkar counts and photos are stored on your own home server. Nisbat only fetches public information — prayer times, weather, the Quran text, news headlines, prices — and never sends your family's data out.</p></details>
+          <details><summary>Does it work away from home?</summary><p>The app opens with the last synced data and keeps your changes; they sync when you're back on the home Wi-Fi. Prayer notifications are scheduled a week ahead, so they still arrive.</p></details>
+          <details><summary>Which Chromecast do I need?</summary><p>Any. Nisbat's TV app is built for the older Chromecast's browser (Chrome 90) and needs no remote — your phone is the remote. Google TV and smart-TV browsers work too.</p></details>
+          <details><summary>Will it take over the TV while we watch cable?</summary><p>No. Nisbat only appears when the TV is already on the Chromecast's input and nothing else is casting. It can also stay off during night hours.</p></details>
+          <details><summary>Who can use it?</summary><p>Only phones someone at home has allowed (once, on the TV or the website), or that know the household PIN. Any phone can be removed again from Settings → Phones.</p></details>
+          <details><summary>Why isn't it on the Play Store?</summary><p>Nisbat is a private family tool that talks to a server in your home, so it's shared as a signed APK. Every release lists its checksum.</p></details>
+          <details><summary>What does it cost?</summary><p>Nothing. There are no accounts, ads or subscriptions.</p></details>
+        </div>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="wrap final">
+        <div>
+          <h2 class="serif">Make the TV the <span class="accent">heart of the home</span> again.</h2>
+          <p class="muted" style="max-width:520px">Set up Nisbat once; the TV shows the day, and every phone in the family keeps it up to date.</p>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:22px"><a class="btn btn-primary" href="#download">Download for Android</a><a class="btn btn-ghost" href="https://github.com/itskaero/nisbat/tree/nisbat-home#readme">Setup guide</a></div>
+        </div>
+        <div class="emblem"><img src="assets/icon.svg" alt="" /><div class="name">Nisbat</div><div class="urdu muted" lang="ur" style="font-size:22px">نسبت</div></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <div class="foot">
+        <div><a class="brand" href="#top" style="padding:0"><img src="assets/icon.svg" alt="" />nisbat<span class="gold">.</span></a><p class="muted" style="margin-top:10px;max-width:320px">A calm family dashboard for Pakistani homes — TV, phones and web, from your own server.</p></div>
+        <div><h5>Product</h5><a href="#screens">Screens</a><a href="#features">Features</a><a href="#download">Download</a></div>
+        <div><h5>Guide</h5><a href="#how">Setup</a><a href="#honest">Data sources</a><a href="#faq">FAQ</a></div>
+        <div><h5>Source</h5><a href="https://github.com/itskaero/nisbat/tree/nisbat-home">GitHub</a><a href="https://github.com/itskaero/nisbat/releases">Releases</a></div>
+      </div>
+      <div class="wordmark" aria-hidden="true">nisbat</div>
+      <div class="fine"><span>© 2026 Nisbat Home · Quran text: Tanzil · prices: Pakistan Bureau of Statistics · weather: Open-Meteo (CC BY 4.0)</span><span class="urdu" lang="ur">گھر کا دن، ہر اسکرین پر</span></div>
+    </div>
+  </footer>
+</div>
+
+<script>
+  // Dot-matrix crescent and star behind the hero (antibiome-style), gently twinkling.
+  (function () {
+    const c = document.getElementById("dots"); if (!c) return;
+    const ctx = c.getContext("2d"); const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let W, H, dots = [];
+    function build() {
+      const dpr = Math.min(2, devicePixelRatio || 1); W = c.clientWidth; H = c.clientHeight;
+      c.width = W * dpr; c.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      const g = 9, cx = W / 2, cy = H * 0.95, R = Math.min(W * 0.36, 360);
+      dots = [];
+      for (let y = 0; y < H; y += g) for (let x = 0; x < W; x += g) {
+        const dx = x - cx, dy = y - cy, d = Math.hypot(dx, dy);
+        const inMoon = d < R && Math.hypot(x - (cx + R * 0.38), y - (cy - R * 0.12)) > R * 0.82;
+        const sx = cx + R * 0.95, sy = cy - R * 0.62, star = Math.hypot(x - sx, y - sy) < R * 0.11;
+        const halo = d < R * 1.5 && d > R * 1.02 && Math.random() < 0.05;
+        if (inMoon || star || halo) dots.push({ x, y, a: Math.random(), s: inMoon || star ? 1 : 0.4, gold: star || Math.random() < 0.18 });
+      }
+    }
+    let t = 0;
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+      for (const p of dots) {
+        const tw = reduce ? 0.8 : 0.55 + 0.45 * Math.sin(t * 0.02 + p.a * 6.28);
+        const fade = Math.min(1, (H - p.y) / (H * 0.9) + 0.25);
+        ctx.fillStyle = p.gold ? `rgba(233,182,107,${0.85 * tw * p.s * fade})` : `rgba(69,212,154,${0.75 * tw * p.s * fade})`;
+        ctx.fillRect(p.x, p.y, 3, 3);
+      }
+      t++; if (!reduce) requestAnimationFrame(draw);
+    }
+    build(); draw(); addEventListener("resize", () => { build(); if (reduce) draw(); });
+  })();
+  // Reveal on scroll.
+  const io = new IntersectionObserver((es) => es.forEach((e) => e.isIntersecting && (e.target.classList.add("in"), io.unobserve(e.target))), { threshold: 0.12 });
+  document.querySelectorAll(".reveal").forEach((el) => io.observe(el));
+</script>
+</body>
+</html>
